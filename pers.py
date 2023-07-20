@@ -1,7 +1,7 @@
 import arcade
 
 KOOR_X = 100
-KOOR_Y = 100
+KOOR_Y = 300
 D_ZONE = 0.01
 
 

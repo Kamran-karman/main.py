@@ -5,6 +5,7 @@ import arcade.gui
 from dataclasses import dataclass
 from array import array
 import arcade.gl
+import Pers
 
 W = 1600
 H = 900

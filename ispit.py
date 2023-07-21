@@ -15,12 +15,10 @@ DAMPING = 0.9
 IGROK_MOVE_GROUND = 10000
 MASS_IGROK = 1
 FRICTION_IGROK = 0
-IGROK_CT = 'player'
 IG_MAX_VERTICAL_SPEED = 2000
 IG_MAX_HORIZANTAL_SPEED = 200
 IGROK_JUMP_FORCE = 40000
 WALL_FRICTION = 0.8
-WALL_CT = 'wall'
 
 
 @dataclass
@@ -77,6 +75,12 @@ class Igra1GlavaViev(arcade.View):
 
         self.igrok = pers.IgrokVoyslav(self.vrag_list)
 
+        vrag = pers.Vrag(self.igrok)
+        vrag.position = 500, 300
+        self.vrag_list.append(vrag)
+
+        self.igrok.sprite_list = self.vrag_list
+
         self.walls_list = arcade.SpriteList()
         for x in range(-64, 10000, 128):
             wall = arcade.Sprite(f'{self.t_main_patch}grassMid.png')
@@ -87,8 +91,10 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.add_sprite(self.igrok, MASS_IGROK, FRICTION_IGROK, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                max_horizontal_velocity=IG_MAX_HORIZANTAL_SPEED,
                                moment=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
-        self.fizika.add_sprite_list(self.walls_list, friction=WALL_FRICTION, collision_type=WALL_CT,
+        self.fizika.add_sprite_list(self.walls_list, friction=WALL_FRICTION,
                                     body_type=arcade.PymunkPhysicsEngine.STATIC)
+        self.fizika.add_sprite_list(self.vrag_list, friction=0.8, body_type=arcade.PymunkPhysicsEngine.DYNAMIC,
+                                    mass=200)
 
     def on_draw(self):
         self.kamera.use()
@@ -96,6 +102,7 @@ class Igra1GlavaViev(arcade.View):
         self.clear()
 
         self.walls_list.draw()
+        self.vrag_list.draw()
 
         self.igrok.draw()
 

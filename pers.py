@@ -1,12 +1,13 @@
 import arcade
+import hit_box_and_radius
+import sposob
 
 KOOR_X = 100
 KOOR_Y = 300
-D_ZONE = 0.01
 
 
 class IgrokVoyslav(arcade.Sprite):
-    def __init__(self):
+    def __init__(self, sprite_list):
         super().__init__()
         self.hp = 100
 
@@ -33,6 +34,9 @@ class IgrokVoyslav(arcade.Sprite):
         self.is_on_ground = True
         self.x_odometr = 0
 
+        self.molniya = sposob.Molniay(sprite_list, self)
+        self.molniya_atak = False
+
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         if dx < 0 and self.storona == 0:
             self.storona = 1
@@ -55,14 +59,20 @@ class IgrokVoyslav(arcade.Sprite):
             self.texture = self.idle_tex[self.storona]
             return
 
-        if abs(self.x_odometr) > 10:
+        if abs(self.x_odometr) > 15:
             self.x_odometr = 0
             self.sch_walk_tex += 1
             if self.sch_walk_tex > 7:
                 self.sch_walk_tex = 0
             self.texture = self.walk_t[self.sch_walk_tex][self.storona]
 
+    def on_update(self, delta_time: float = 1 / 60):
+        #self.molniya.update_animation()
+        if self.molniya_atak:
+            self.molniya.udar = True
+            self.molniya_atak = False
+        self.molniya.update_animation()
+
 
 def load_tex_pair(filename):
     return [arcade.load_texture(filename), arcade.load_texture(filename, flipped_horizontally=True)]
-

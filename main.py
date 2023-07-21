@@ -10,16 +10,16 @@ import pers
 W = 1600
 H = 900
 
-GRAVITY = (0, -1000)
+GRAVITY = (0, -1250)
 DAMPING = 0.9
 IGROK_MOVE_GROUND = 10000
 MASS_IGROK = 1
-FRICTION_IGROK = 1
+FRICTION_IGROK = 0
 IGROK_CT = 'player'
-IG_MAX_VERTICAL_SPEED = 1600
+IG_MAX_VERTICAL_SPEED = 2000
 IG_MAX_HORIZANTAL_SPEED = 200
 IGROK_JUMP_FORCE = 40000
-WALL_FRICTION = 1
+WALL_FRICTION = 0.8
 WALL_CT = 'wall'
 
 
@@ -66,6 +66,7 @@ class Igra1GlavaViev(arcade.View):
         # Переменные True, либо False
         self.levo = False
         self.pravo = False
+        self.beg = False
 
         self.t_main_patch = (':resources:images/tiles/')
 
@@ -85,7 +86,7 @@ class Igra1GlavaViev(arcade.View):
         self.fizika = arcade.PymunkPhysicsEngine(GRAVITY, DAMPING)
         self.fizika.add_sprite(self.igrok, MASS_IGROK, FRICTION_IGROK, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                max_horizontal_velocity=IG_MAX_HORIZANTAL_SPEED,
-                               moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
+                               moment=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
         self.fizika.add_sprite_list(self.walls_list, friction=WALL_FRICTION, collision_type=WALL_CT,
                                     body_type=arcade.PymunkPhysicsEngine.STATIC)
 
@@ -100,13 +101,19 @@ class Igra1GlavaViev(arcade.View):
 
     def on_update(self, delta_time: float):
         if self.pravo and not self.levo:
-            force = (IGROK_MOVE_GROUND, 0)
-            self.fizika.apply_force(self.igrok, force)
-            self.fizika.set_friction(self.igrok, 0.5)
+            if self.beg:
+                self.fizika.set_horizontal_velocity(self.igrok, 500)
+            else:
+                force = (IGROK_MOVE_GROUND, 0)
+                self.fizika.apply_force(self.igrok, force)
+                self.fizika.set_friction(self.igrok, 0.5)
         elif not self.pravo and self.levo:
-            force = (-IGROK_MOVE_GROUND, 0)
-            self.fizika.apply_force(self.igrok, force)
-            self.fizika.set_friction(self.igrok, 0.5)
+            if self.beg:
+                self.fizika.set_horizontal_velocity(self.igrok, -500)
+            else:
+                force = (-IGROK_MOVE_GROUND, 0)
+                self.fizika.apply_force(self.igrok, force)
+                self.fizika.set_friction(self.igrok, 0.5)
         else:
             self.fizika.set_friction(self.igrok, 1)
 
@@ -115,7 +122,6 @@ class Igra1GlavaViev(arcade.View):
     def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.NUM_0:
             self.igrok.molniya_atak = True
-            print(1)
 
         if symbol == arcade.key.D or symbol == arcade.key.RIGHT:
             self.pravo = True
@@ -128,17 +134,11 @@ class Igra1GlavaViev(arcade.View):
                 self.fizika.apply_force(self.igrok, force)
 
         if symbol == arcade.key.RSHIFT:
-            self.fizika.remove_sprite(self.igrok)
-            self.fizika.add_sprite(self.igrok, MASS_IGROK, FRICTION_IGROK, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
-                                   max_horizontal_velocity=600,
-                                   moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
+            self.beg = True
 
     def on_key_release(self, _symbol: int, _modifiers: int):
         if _symbol == arcade.key.RSHIFT:
-            self.fizika.remove_sprite(self.igrok)
-            self.fizika.add_sprite(self.igrok, MASS_IGROK, FRICTION_IGROK, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
-                                   max_horizontal_velocity=IG_MAX_HORIZANTAL_SPEED,
-                                   moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
+            self.beg = False
 
         if _symbol == arcade.key.D or _symbol == arcade.key.RIGHT:
             self.pravo = False

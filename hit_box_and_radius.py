@@ -11,19 +11,14 @@ class Radius(arcade.Sprite):
 
         self.texture = self.rad[1]
 
-    def check_collision(self, sprite_or_spritelist):
-        if sprite_or_spritelist is arcade.Sprite:
-            list = False
-        elif sprite_or_spritelist is arcade.SpriteList:
-            list = True
-
-        if list:
-            if arcade.check_for_collision_with_list(self, sprite_or_spritelist):
+    def check_collision(self, sprite=None, sprite_list=None):
+        if sprite_list is not None:
+            if arcade.check_for_collision_with_list(self, sprite_list):
                 collision = True
             else:
                 collision = False
-        elif not list:
-            if arcade.check_for_collision(self, sprite_or_spritelist):
+        elif sprite is not None:
+            if arcade.check_for_collision(self, sprite):
                 collision = True
             else:
                 collision = False

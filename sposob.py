@@ -1,5 +1,6 @@
 import arcade
 import hit_box_and_radius
+import math
 
 MOL_BLUE = (44, 117, 255)
 WHITE = (255, 255, 255)
@@ -78,9 +79,9 @@ class Molniay(arcade.Sprite):
                                     spisok2.append(xy)
                         if len(spisok) == 0:
                             if stx > enx:
-                                self.en_x, self.en_y = enx - 30, eny + 10
+                                self.en_x, self.en_y = enx - 150, eny + 50
                             elif stx < enx:
-                                self.en_x, self.en_y = enx + 30, eny + 10
+                                self.en_x, self.en_y = enx + 150, eny + 50
                             break
                         elif w == 3 and len(spisok) != 0:
                             en = spisok.index(min(spisok))
@@ -96,9 +97,9 @@ class Molniay(arcade.Sprite):
                             arcade.draw_circle_filled(stx, sty, 25, WHITE)
                             arcade.draw_circle_filled(enx, eny, 25, WHITE)
                             if stx > enx:
-                                self.en_x, self.en_y = enx - 30, eny + 10
+                                self.en_x, self.en_y = enx - 150, eny + 50
                             elif stx < enx:
-                                self.en_x, self.en_y = enx + 30, eny + 10
+                                self.en_x, self.en_y = enx + 150, eny + 50
                             break
                         else:
                             if len(spisok) != 0:
@@ -126,7 +127,7 @@ class Molniay(arcade.Sprite):
             self.s = 0
 
     def koordinati(self):
-        return self.en_x, self.en_y
+        return (self.en_x, self.en_y)
 
 
 class GnevTora(arcade.Sprite):
@@ -168,3 +169,39 @@ class GnevTora(arcade.Sprite):
         for sprite in self.sprite_list:
             if arcade.check_for_collision(self.radius, sprite):
                 sprite.hp -= 20
+
+
+class StreliPeruna(arcade.Sprite):
+    def __init__(self, sprite_list, igrok):
+        super().__init__()
+        self.sprite_list = sprite_list
+        self.igrok = igrok
+
+        self.rad = hit_box_and_radius.Radius(0.5)
+
+        self.k1 = None
+        self.k2 = None
+        self.g = None
+
+        self.spis_pos = []
+        self.spis1 = []
+
+        self.udar = False
+
+    def on_update(self, delta_time: float = 1 / 60):
+        pass
+
+    def update_animation(self, delta_time: float = 1 / 60):
+        if self.udar:
+            for sprite in self.sprite_list:
+                if arcade.check_for_collision(self.rad, sprite):
+                    self.spis_pos.append(sprite.position)
+
+            for pos in self.spis_pos:
+                rx = abs(self.igrok.center_x - pos[0])
+                ry = abs(self.igrok.center_y - pos[1])
+                rast = math.hypot(rx, ry)
+                self.spis1.append(rast)
+            self.udar = False
+
+

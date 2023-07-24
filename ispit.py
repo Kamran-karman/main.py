@@ -52,21 +52,13 @@ class Igra1GlavaViev(arcade.View):
 
         self.kamera = None
 
-        # GUI-переменные
-        self.meneger = None
-        self.meneger1 = None
-        self.meneger2 = None
-        self.text = ''
-        self.text_info = None
-        self.text_info1 = None
-        self.text_info2 = None
-        self.v_box = None
-        self.v_box1 = None
-
         # Переменные True, либо False
         self.levo = False
         self.pravo = False
         self.beg = False
+
+        self.s = 0
+        self.s1 = 0
 
         self.t_main_patch = (':resources:images/tiles/')
 
@@ -77,7 +69,7 @@ class Igra1GlavaViev(arcade.View):
 
         self.igrok = pers.BetaMaster(self.vrag_list)
 
-        vrag = pers.Vrag(self.igrok, self.object)
+        vrag = pers.Vrag(self.igrok, self.object, True)
         vrag.position = 500, 400
         self.vrag_list.append(vrag)
 
@@ -101,7 +93,7 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.add_sprite_list(self.walls_list, friction=WALL_FRICTION,
                                     body_type=arcade.PymunkPhysicsEngine.STATIC, collision_type='wall')
         for vrag in self.vrag_list:
-            self.fizika.add_sprite(vrag, 2, 0.8, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
+            self.fizika.add_sprite(vrag, 200, 0.8, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                    max_horizontal_velocity=IG_MAX_HORIZANTAL_SPEED,
                                    moment=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
 
@@ -118,10 +110,19 @@ class Igra1GlavaViev(arcade.View):
 
     def on_update(self, delta_time: float):
         for vrag in self.vrag_list:
-            vrag.on_update()
-            force = vrag.return_force()
-            self.fizika.apply_force(vrag, force)
+            x = vrag.return_force('x')
+            y = vrag.return_force('y')
+
+            if y > 0:
+                self.s += 1
+            if self.s > 2 and not vrag.is_on_ground:
+                y = 0
+
+            self.fizika.apply_force(vrag, (x, y))
             self.fizika.set_friction(vrag, 0.5)
+
+            if y == 0 and self.s >= 2:
+                self.s = 0
 
         if self.pravo and not self.levo:
             if self.beg:
@@ -140,11 +141,22 @@ class Igra1GlavaViev(arcade.View):
         else:
             self.fizika.set_friction(self.igrok, 1)
 
+        if self.igrok.molniya.udar and self.s1 == 0 and self.igrok.molniya.s_kd >= 300:
+            self.s1 += 1
+            poz = self.igrok.molniya.koordinati()
+            if poz != (0, 0):
+                self.fizika.set_position(self.igrok, poz)
+
         self.fizika.step()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.NUM_2:
+            self.igrok.streliPeruna.udar = True
+            print(1)
+
         if symbol == arcade.key.NUM_0:
             self.igrok.molniya.udar = True
+            self.s1 = 0
 
         if symbol == arcade.key.NUM_1:
             self.igrok.gnev_Tora.udar = True

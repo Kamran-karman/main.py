@@ -106,9 +106,10 @@ class BetaMaster(arcade.Sprite):
         self.x_odometr = 0
 
         self.sprite_list = sprite_list
-        self.molniya = sposob.Molniay(self.sprite_list, self)
 
+        self.molniya = sposob.Molniay(self.sprite_list, self)
         self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
+        self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         if dx < -D_ZONE and self.storona == 0:
@@ -141,8 +142,8 @@ class BetaMaster(arcade.Sprite):
 
     def update_animation(self, delta_time: float = 1 / 60):
         self.molniya.update_animation()
-
         self.gnev_Tora.update_animation()
+        self.streliPeruna.update_animation()
 
 
 class Vrag(arcade.Sprite):
@@ -150,7 +151,8 @@ class Vrag(arcade.Sprite):
         super().__init__()
         self.hp = 100
 
-        self.force = (0., 0.)
+        self.force_x = 0
+        self.force_y = 0
 
         self.stan = False
         self.s_stan = 0
@@ -192,6 +194,25 @@ class Vrag(arcade.Sprite):
         self.x_odometr = 0
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.radius_vid.position = self.radius_ataki.position = self.position
+
+        if arcade.check_for_collision(self.igrok, self.radius_vid) and not self.kast_scena:
+            if self.igrok.center_x < self.radius_vid.center_x:
+                if self.left - self.igrok.right <= 30:
+                    self.force_x, self.force_y = 0., 0.
+                else:
+                    self.force_x = -11000
+            elif self.igrok.center_x > self.radius_vid.center_x:
+                if self.igrok.left - self.right <= 30:
+                    self.force_x, self.force_y = 0., 0.
+                else:
+                    self.force_x = 11000
+
+            if self.igrok.center_y > self.radius_vid.center_y and self.is_on_ground and abs(dx) <= D_ZONE:
+                self.force_y = 50000
+        else:
+            self.force_x, self.force_y = 0., 0.
+
         if dx < -D_ZONE and self.storona == 0:
             self.storona = 1
         elif dx > D_ZONE and self.storona == 1:
@@ -220,28 +241,13 @@ class Vrag(arcade.Sprite):
                 self.sch_walk_tex = 0
             self.texture = self.walk_t[self.sch_walk_tex][self.storona]
 
-    def on_update(self, delta_time: float = 1 / 60):
-        self.radius_vid.position = self.radius_ataki = self.position
-
-        if arcade.check_for_collision(self.igrok, self.radius_vid) and not self.kast_scena:
-            if self.igrok.center_x < self.radius_vid.center_x:
-                if self.left - self.igrok.right <= 30:
-                    self.force = (0., 0.)
-                else:
-                    self.force = (-11000, 0)
-            elif self.igrok.center_x > self.radius_vid.center_x:
-                if self.igrok.left - self.right <= 30:
-                    self.force = (0., 0.)
-                else:
-                    self.force = (11000, 0)
-
-            if self.igrok.center_y > self.radius_vid.center_y and self.is_on_ground and self.force[0] == 0:
-                self.force = (0, 50000)
-        else:
-            self.force = (0., 0.)
-
-    def return_force(self):
-        return self.force
+    def return_force(self, xy=str()):
+        if not self.is_on_ground:
+            self.force_y = 0
+        if xy == 'x':
+            return self.force_x
+        if xy == 'y':
+            return self.force_y
 
 
 def load_tex_pair(filename):

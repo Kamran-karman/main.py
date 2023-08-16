@@ -36,6 +36,7 @@ class Molniay(arcade.Sprite):
         self.s_kd += 1
         if self.s_kd < 300:
             self.udar = False
+
         if self.s <= 3 and self.udar and self.s_kd >= 300:
             spisok = []
             spisok2 = []
@@ -384,7 +385,7 @@ class VeterOtalkivanie(arcade.Sprite):
 
 # Оружие
 class Mech(arcade.Sprite):
-    def __init__(self, pers, sprite_list, shcit, storona, angle=30):
+    def __init__(self, pers, sprite_list, shcit, storona, angle=15):
         super().__init__()
         self.uron = 50
 
@@ -392,9 +393,10 @@ class Mech(arcade.Sprite):
         self.sprite_list = sprite_list
         self.shchit = shcit
         self.storona = storona
-        self.angle = angle
+        self.ugl = angle
 
         self.s = 0
+        self.s1 = 30
 
         self.slovar = {}
 
@@ -409,11 +411,14 @@ class Mech(arcade.Sprite):
             for sprite in self.sprite_list:
                 self.slovar.update({sprite: False})
             self.s += 1
+        if self.s1 <= 30:
+            self.udar = False
         if self.udar:
             self.s_udar += 1
         if self.s_udar > 10:
             self.s_udar = 0
             self.udar = False
+            self.s1 = 0
 
         if self.udar:
             for sprite in self.sprite_list:
@@ -435,16 +440,25 @@ class Mech(arcade.Sprite):
             for i in self.slovar:
                 self.slovar[i] = False
 
+        self.s1 += 1
+
     def draw(self, *, filter=None, pixelated=None, blend_function=None):
+        if self.s1 <= 30:
+            self.udar = False
         if self.udar:
             if self.storona == 0:
+                self.udar_tex0.angle = -self.ugl
                 self.udar_tex0.draw()
             elif self.storona == 1:
+                self.udar_tex1.angle = self.ugl
                 self.udar_tex1.draw()
 
 
 class Shchit(arcade.Sprite):
     pass
 
+
+def load_tex_pair(filename):
+    return [arcade.load_texture(filename), arcade.load_texture(filename, flipped_horizontally=True)]
 
 

@@ -158,6 +158,8 @@ class Igra1GlavaViev(arcade.View):
                 self.vrag_list.remove(vrag)
                 self.fizika.remove_sprite(vrag)
             else:
+                vrag.on_update()
+
                 x = vrag.return_force('x')
                 y = vrag.return_force('y')
 

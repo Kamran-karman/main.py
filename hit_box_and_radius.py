@@ -8,7 +8,7 @@ class Radius(arcade.Sprite):
         """
         super().__init__()
 
-        self.rad = load_tex_pair('nuzhno/radius_porazheniya.png')
+        self.rad = arcade.load_texture_pair('nuzhno/radius_porazheniya.png')
 
         self.scale = razmer
 
@@ -32,11 +32,11 @@ class Radius(arcade.Sprite):
 class KvadratRadius(arcade.Sprite):
     def __init__(self, razmer=1):
         """
-        :param razmer: 128x128
+        :param razmer: 127x127
         """
         super().__init__()
 
-        self.rad = load_tex_pair('nuzhno/kvadrat_radius.png')
+        self.rad = arcade.load_texture_pair('nuzhno/kvadrat_radius.png')
 
         self.scale = razmer
 
@@ -56,6 +56,3 @@ class KvadratRadius(arcade.Sprite):
 
         return collision
 
-
-def load_tex_pair(filename):
-    return [arcade.load_texture(filename), arcade.load_texture(filename, flipped_horizontally=True)]

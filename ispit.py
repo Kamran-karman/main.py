@@ -65,11 +65,15 @@ class Igra1GlavaViev(arcade.View):
 
         self.s = 0
         self.s1 = 0
+        self.s_zoom = 0
+        self.s_zoom1 = 0
+        self.zoom = False
+        self.zoom1 = False
 
         self.t_main_patch = (':resources:images/tiles/')
 
     def setup(self):
-        self.kamera = arcade.Camera(W, H)
+        self.kamera = arcade.Camera()
 
         self.smert_list1 = arcade.SpriteList()
         self.smert_list2 = arcade.SpriteList()
@@ -104,15 +108,15 @@ class Igra1GlavaViev(arcade.View):
 
         self.vrag_list = arcade.SpriteList()
 
-        self.igrok = pers.BetaMaster(self.vrag_list)
+        self.igrok = pers.IgrokVoyslav(self.vrag_list)
 
         vrag = pers.Vrag(self.igrok, self.sprite_list, self.vrag_list)
-        vrag.position = 500, 400
+        vrag._position = 500, 400
         self.vrag_list.append(vrag)
 
         for x in range(700, 1400, 100):
             vrag = pers.Vrag(self.igrok, self.sprite_list, self.vrag_list)
-            vrag.position = x, 400
+            vrag._position = x, 400
             self.vrag_list.append(vrag)
 
         for vrag in self.vrag_list:
@@ -123,13 +127,14 @@ class Igra1GlavaViev(arcade.View):
         self.fizika = arcade.PymunkPhysicsEngine(GRAVITY, DAMPING)
         self.fizika.add_sprite(self.igrok, MASS_IGROK, 1, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                max_horizontal_velocity=IG_MAX_HORIZANTAL_SPEED,
-                               moment=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9, collision_type='player')
+                               moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9, collision_type='player')
         self.fizika.add_sprite_list(self.walls_list, friction=1,
                                     body_type=arcade.PymunkPhysicsEngine.STATIC, collision_type='wall')
         for vrag in self.vrag_list:
             self.fizika.add_sprite(vrag, 2, 1, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                    max_horizontal_velocity=200,
-                                   moment=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
+                                   moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
+        print(self.kamera.zoom)
 
     def on_draw(self):
         self.kamera.use()
@@ -144,10 +149,27 @@ class Igra1GlavaViev(arcade.View):
         self.walls_list.draw()
         for vrag in self.vrag_list:
             vrag.draw()
+            vrag.update_animation()
 
         self.igrok.update_animation()
 
     def on_update(self, delta_time: float):
+        if self.zoom:
+            self.s_zoom += 1
+            if self.s_zoom > 180:
+                self.s_zoom = 0
+                self.zoom = False
+            if self.zoom:
+                if self.s_zoom <= 180:
+                    self.kamera.zoom -= 1 / 1800
+        elif self.zoom1:
+            self.s_zoom1 += 1
+            if self.s_zoom1 > 180:
+                self.s_zoom1 = 0
+                self.zoom1 = False
+            if self.zoom1:
+                if self.s_zoom1 <= 180:
+                    self.kamera.zoom += 1 / 1800
         self.igrok.on_update()
         for vrag in self.vrag_list:
             if vrag.smert:
@@ -199,8 +221,19 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.step()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.RSHIFT:
+            self.igrok.shcit.block1 = True
+
+        if symbol == arcade.key.LCTRL:
+            self.zoom1 = True
+            self.zoom = False
+
+        if symbol == arcade.key.Z:
+            self.zoom = True
+            self.zoom1 = False
+
         if symbol == arcade.key.SPACE:
-            self.igrok.mech.udar = True
+            self.igrok.udar = True
 
         if symbol == arcade.key.RCTRL:
             self.igrok.veter_otalk.udar = True
@@ -230,6 +263,8 @@ class Igra1GlavaViev(arcade.View):
             self.fizika.remove_sprite(self.igrok)
 
     def on_key_release(self, _symbol: int, _modifiers: int):
+        if _symbol == arcade.key.RSHIFT:
+            self.igrok.shcit.block1 = False
 
         if _symbol == arcade.key.D or _symbol == arcade.key.RIGHT:
             self.pravo = False

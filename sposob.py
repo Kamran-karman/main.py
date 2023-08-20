@@ -1,10 +1,14 @@
 import arcade
 import hit_box_and_radius
 import math
+import random
 
 MOL_BLUE = (44, 117, 255)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+
+ZASHCITA = 0
+ORUZHIE = 1
 
 
 # Стихия молнии
@@ -64,12 +68,12 @@ class Molniay(arcade.Sprite):
                                 self.slovar[pos] = True
                                 sprite.hp -= self.uron
 
-                arcade.draw_line(stx, sty, enx, eny, MOL_BLUE, 30)
-                arcade.draw_circle_filled(stx, sty, 50, MOL_BLUE)
-                arcade.draw_circle_filled(enx, eny, 30, MOL_BLUE)
-                arcade.draw_line(stx, sty, enx, eny, WHITE, 20)
-                arcade.draw_circle_filled(stx, sty, 45, WHITE)
-                arcade.draw_circle_filled(enx, eny, 25, WHITE)
+                arcade.draw_line(stx, sty, enx, eny, arcade.color.DARK_BLUE, 30)
+                arcade.draw_circle_filled(stx, sty, 50, arcade.color.DARK_BLUE)
+                arcade.draw_circle_filled(enx, eny, 30, arcade.color.DARK_BLUE)
+                arcade.draw_line(stx, sty, enx, eny, arcade.color.WHITE, 20)
+                arcade.draw_circle_filled(stx, sty, 45, arcade.color.WHITE)
+                arcade.draw_circle_filled(enx, eny, 25, arcade.color.WHITE)
                 radius = hit_box_and_radius.Radius()
                 radius.position = enx, eny
                 w = 0
@@ -113,12 +117,12 @@ class Molniay(arcade.Sprite):
                                             self.slovar[pos] = True
                                             sprite.hp -= self.uron
 
-                            arcade.draw_line(stx, sty, enx, eny, MOL_BLUE, 30)
-                            arcade.draw_circle_filled(enx, eny, 30, MOL_BLUE)
-                            arcade.draw_circle_filled(stx, sty, 30, MOL_BLUE)
-                            arcade.draw_line(stx, sty, enx, eny, WHITE, 20)
-                            arcade.draw_circle_filled(stx, sty, 25, WHITE)
-                            arcade.draw_circle_filled(enx, eny, 25, WHITE)
+                            arcade.draw_line(stx, sty, enx, eny, arcade.color.DARK_BLUE, 30)
+                            arcade.draw_circle_filled(enx, eny, 30, arcade.color.DARK_BLUE)
+                            arcade.draw_circle_filled(stx, sty, 30, arcade.color.DARK_BLUE)
+                            arcade.draw_line(stx, sty, enx, eny, arcade.color.WHITE, 20)
+                            arcade.draw_circle_filled(stx, sty, 25, arcade.color.WHITE)
+                            arcade.draw_circle_filled(enx, eny, 25, arcade.color.WHITE)
                             if stx > enx:
                                 self.en_x, self.en_y = enx - 150, eny + 50
                             elif stx < enx:
@@ -137,12 +141,12 @@ class Molniay(arcade.Sprite):
                                                 self.slovar[pos] = True
                                                 sprite.hp -= self.uron
 
-                                arcade.draw_line(stx, sty, enx, eny, MOL_BLUE, 30)
-                                arcade.draw_circle_filled(enx, eny, 30, MOL_BLUE)
-                                arcade.draw_circle_filled(stx, sty, 30, MOL_BLUE)
-                                arcade.draw_line(stx, sty, enx, eny, WHITE, 20)
-                                arcade.draw_circle_filled(stx, sty, 25, WHITE)
-                                arcade.draw_circle_filled(enx, eny, 25, WHITE)
+                                arcade.draw_line(stx, sty, enx, eny, arcade.color.DARK_BLUE, 30)
+                                arcade.draw_circle_filled(enx, eny, 30, arcade.color.DARK_BLUE)
+                                arcade.draw_circle_filled(stx, sty, 30, arcade.color.DARK_BLUE)
+                                arcade.draw_line(stx, sty, enx, eny, arcade.color.WHITE, 20)
+                                arcade.draw_circle_filled(stx, sty, 25, arcade.color.WHITE)
+                                arcade.draw_circle_filled(enx, eny, 25, arcade.color.WHITE)
                                 radius.position = enx, eny
                     w += 1
 
@@ -188,8 +192,8 @@ class GnevTora(arcade.Sprite):
         if self.s <= 300:
             self.udar = False
         if self.udar and self.s2 < 3 and self.s > 300:
-            arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 250, MOL_BLUE)
-            arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 150, WHITE)
+            arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 250, arcade.color.DARK_BLUE)
+            arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 150, arcade.color.WHITE)
 
         if self.s2 >= 3:
             self.udar = False
@@ -276,8 +280,8 @@ class StreliPeruna(arcade.Sprite):
 
             while len(spis1) >= 1:
                 enx, eny = min(spis_pos)
-                arcade.draw_line(stx, sty, enx, eny, MOL_BLUE, 25)
-                arcade.draw_line(stx, sty, enx, eny, WHITE, 15)
+                arcade.draw_line(stx, sty, enx, eny, arcade.color.DARK_BLUE, 25)
+                arcade.draw_line(stx, sty, enx, eny, arcade.color.WHITE, 15)
                 for sprite in self.sprite_list:
                     if sprite.position == (enx, eny) and self.s == 0 and self.udar:
                         for i in self.slovar:
@@ -298,6 +302,13 @@ class StreliPeruna(arcade.Sprite):
             for i in self.slovar:
                 self.slovar[i] = False
             self.s = 0
+
+
+class SharMolniay(arcade.Sprite):
+    def __init__(self, igrok, sprite_list):
+        super().__init__()
+        self.sprite_list = sprite_list
+        self.igrok = igrok
 
 
 # Стихия ветра
@@ -383,25 +394,27 @@ class VeterOtalkivanie(arcade.Sprite):
             self.rad.draw()
 
 
-# Оружие
+# Ближний юой
 class Mech(arcade.Sprite):
-    def __init__(self, pers, sprite_list, shcit, storona, angle=15):
+    def __init__(self, pers, sprite_list, storona, v_ataki=(30, 10)):
         super().__init__()
         self.uron = 50
 
         self.pers = pers
         self.sprite_list = sprite_list
-        self.shchit = shcit
         self.storona = storona
-        self.ugl = angle
 
         self.s = 0
         self.s1 = 30
+        self.kd = v_ataki[0]
+        self.kd1 = v_ataki[1]
 
         self.slovar = {}
 
-        self.udar_tex0 = arcade.Sprite('nuzhno/udar.png', 1.5)
-        self.udar_tex1 = arcade.Sprite('nuzhno/udar.png', 1.5, flipped_horizontally=True)
+        self.udar_tex0 = arcade.load_texture_pair('nuzhno/udar.png')
+        self.udar_tex1 = arcade.load_texture_pair('nuzhno/udar1.png')
+        self.texture = self.udar_tex0[1]
+        self.scale = 1.5
 
         self.udar = False
         self.s_udar = 0
@@ -411,30 +424,57 @@ class Mech(arcade.Sprite):
             for sprite in self.sprite_list:
                 self.slovar.update({sprite: False})
             self.s += 1
-        if self.s1 <= 30:
+        if self.s1 <= self.kd or self.pers.minus_hp:
             self.udar = False
         if self.udar:
             self.s_udar += 1
-        if self.s_udar > 10:
+        if self.s_udar > self.kd1:
             self.s_udar = 0
             self.udar = False
             self.s1 = 0
 
         if self.udar:
             for sprite in self.sprite_list:
-                if arcade.check_for_collision(self.udar_tex1, sprite) and self.storona == 1:
+                if arcade.check_for_collision(self, sprite):
                     for i in self.slovar:
                         if i == sprite and not self.slovar[i]:
-                            self.slovar[i] = True
-                            sprite.hp -= self.uron
-                elif arcade.check_for_collision(self.udar_tex0, sprite) and self.storona == 0:
-                    for i in self.slovar:
-                        if i == sprite and not self.slovar[i]:
-                            self.slovar[i] = True
-                            sprite.hp -= self.uron
+                            r = 10
+                            if sprite.reakciay < self.pers.reakciay:
+                                if sprite.reakciay * r <= self.pers.reakciay:
+                                    self.slovar[i] = True
+                                    sprite.hp -= self.uron
+                                else:
+                                    r -= 0.1
+                                    shanc = 100
+                                    while r > 0:
+                                        if sprite.reakciay * r <= self.pers.reakciay < sprite.reakciay * r + 0.1:
+                                            if random.randint(1, shanc) == 2:
+                                                self.slovar[i] = True
+                                                sprite.hp -= self.uron
+                                            else:
+                                                sprite.block = True
+                                        r -= 0.1
+                                        shanc -= 1
+                            elif sprite.reakciay > self.pers.reakciay:
+                                if self.pers.reakciay * r <= sprite.reakciay:
+                                    sprite.block = True
+                                else:
+                                    r -= 0.1
+                                    shanc = 100
+                                    while r > 0:
+                                        if self.pers.reakciay * r <= sprite.reakciay < self.pers.reakciay * r + 0.1:
+                                            if random.randint(1, shanc) == 2:
+                                                sprite.block = True
+                                            else:
+                                                self.slovar[i] = True
+                                                sprite.hp -= self.uron
+                                        r -= 0.1
+                                        shanc -= 1
 
-        self.udar_tex0.left, self.udar_tex0.bottom = self.pers.center_x - 12, self.pers.center_y - 40
-        self.udar_tex1.right, self.udar_tex1.bottom = self.pers.center_x + 12, self.pers.center_y - 40
+        if self.pers.storona == 0:
+            self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
+        elif self.pers.storona == 1:
+            self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
 
         if not self.udar:
             for i in self.slovar:
@@ -442,23 +482,96 @@ class Mech(arcade.Sprite):
 
         self.s1 += 1
 
-    def draw(self, *, filter=None, pixelated=None, blend_function=None):
-        if self.s1 <= 30:
-            self.udar = False
-        if self.udar:
-            if self.storona == 0:
-                self.udar_tex0.angle = -self.ugl
-                self.udar_tex0.draw()
-            elif self.storona == 1:
-                self.udar_tex1.angle = self.ugl
-                self.udar_tex1.draw()
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        if self.pers.storona == 0:
+            self.texture = self.udar_tex0[0]
+        else:
+            self.texture = self.udar_tex1[0]
 
 
 class Shchit(arcade.Sprite):
-    pass
+    def __init__(self, pers, sprite_list):
+        super().__init__()
+        self.pers = pers
+        self.sprite_list = sprite_list
+        self.scale = 0.5
+        self.tex_shcit = arcade.load_texture_pair('nuzhno/shcit.png')
+        self.texture = self.tex_shcit[1]
+        self.zashcita = ZASHCITA
+
+        self.block = False
+        self.block1 = False
+        self.sila = False
+        self.udar = False
+
+        self.force_x = 0
+
+        self.slovar = {}
+
+        self.s = 0
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        if self.pers.udar:
+            self.udar = True
+
+        self.center_y = self.pers.center_y
+        if self.pers.storona == 1:
+            self.center_x = self.pers.center_x - 10
+        else:
+            self.center_x = self.pers.center_x + 10
+
+        if self.s == 0:
+            self.s += 1
+            for sprite in self.sprite_list:
+                self.slovar.update({sprite: False})
+
+        if len(self.slovar) < len(self.sprite_list):
+            self.slovar.clear()
+            self.s = 0
+
+        if self.udar:
+            self.block = self.block1 = False
+            for sprite in self.sprite_list:
+                if arcade.check_for_collision(sprite, self):
+                    for i in self.slovar:
+                        if i == sprite and not self.slovar[i]:
+                            self.slovar[i] = True
+                            sprite.hp -= 40
+
+            return
+
+        if not self.udar:
+            for i in self.slovar:
+                self.slovar[i] = False
+
+        if self.block1:
+            self.pers.block1 = True
+        else:
+            self.pers.block1 = False
+
+        for sprite in self.sprite_list:
+            for oruzh in sprite.oruzh_list:
+                if arcade.check_for_collision(self, oruzh) and (self.block or self.block1) and oruzh.udar:
+                    self.force_x = 2000
+                    self.sila = True
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        if self.udar:
+            self.block = self.block1 = False
+            if self.pers.storona == 0:
+                self.angle = -60
+                print(0)
+            else:
+                print(1)
+                self.angle = 60
+
+        if self.block or self.block1:
+            self.texture = self.tex_shcit[self.pers.storona]
 
 
-def load_tex_pair(filename):
-    return [arcade.load_texture(filename), arcade.load_texture(filename, flipped_horizontally=True)]
+class Block:
+    def __init__(self, pers):
+        pass
+
 
 

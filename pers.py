@@ -10,10 +10,10 @@ D_ZONE = 0.005
 
 STOP = 11
 
-HP_VRAG = 1000
+HP_VRAG = 250
 
 
-class IgrokVoyslav(arcade.Sprite):
+class Voyslav(arcade.Sprite):
     def __init__(self, sprite_list):
         super().__init__()
         self.sprite_list = sprite_list
@@ -30,9 +30,9 @@ class IgrokVoyslav(arcade.Sprite):
         self.s_block = 0
 
         self.udar = False
+        self.s_udar = 10
+        self.s1_udar = 0
 
-        self.center_x = KOOR_X
-        self.center_y = KOOR_Y
         self.scale = 1
         self.storona = 1
 
@@ -105,7 +105,17 @@ class IgrokVoyslav(arcade.Sprite):
                 self.shcit.block = True
                 self.s_block += 1
 
-        if self.udar:
+        if self.s_udar < 10:
+            self.udar = False
+            self.s_udar += 1
+
+        if self.s1_udar >= 10:
+            self.s1_udar = 0
+            self.s_udar = 0
+            self.s_udar = False
+
+        if self.udar and self.s_udar >= 10:
+            self.s1_udar += 1
             self.texture = self.udar_tex[self.storona]
             return
 
@@ -147,7 +157,7 @@ class IgrokVoyslav(arcade.Sprite):
         self.gnev_Tora.on_update()
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.block or self.block1:
+        if self.block or self.block1 or self.udar:
             self.shcit.draw()
 
         self.shcit.update_animation()
@@ -162,7 +172,7 @@ class BetaMaster(arcade.Sprite):
         super().__init__()
         self.sprite_list = sprite_list
 
-        self.hp = 1000
+        self.hp = 10000
         self.h = self.hp
         self.smert = False
         self.minus_hp = False
@@ -172,6 +182,10 @@ class BetaMaster(arcade.Sprite):
         self.block1 = False
         self.block = False
         self.s_block = 0
+
+        self.udar = False
+        self.s_udar = 10
+        self.s1_udar = 0
 
         self.center_x = KOOR_X
         self.center_y = KOOR_Y
@@ -185,6 +199,7 @@ class BetaMaster(arcade.Sprite):
         self.idle_tex = arcade.load_texture_pair(f"{main_patch}_idle.png")
         self.jump_tex = arcade.load_texture_pair(f"{main_patch}_jump.png")
         self.fall_tex = arcade.load_texture_pair(f"{main_patch}_fall.png")
+        self.udar_tex = arcade.load_texture_pair(f'nuzhno/udar2.png')
 
         self.walk_t = []
         for i in range(8):
@@ -249,6 +264,20 @@ class BetaMaster(arcade.Sprite):
                 self.shcit.block = True
                 self.s_block += 1
 
+        if self.s_udar < 10:
+            self.udar = False
+            self.s_udar += 1
+
+        if self.s1_udar >= 10:
+            self.s1_udar = 0
+            self.s_udar = 0
+            self.s_udar = False
+
+        if self.udar and self.s_udar >= 10:
+            self.s1_udar += 1
+            self.texture = self.udar_tex[self.storona]
+            return
+
         if not self.is_on_ground:
             if dy > D_ZONE:
                 self.texture = self.jump_tex[self.storona]
@@ -292,7 +321,7 @@ class BetaMaster(arcade.Sprite):
     def update_animation(self, delta_time: float = 1 / 60):
         if self.mech.udar:
             self.mech.draw()
-        if self.block or self.block1:
+        if self.block or self.block1 or self.udar:
             self.shcit.draw()
         self.shcit.update_animation()
         self.mech.update_animation()
@@ -364,7 +393,7 @@ class Vrag(arcade.Sprite):
         if self.hp >= self.h:
             self.minus_hp = False
         if not self.smert:
-            if self.hp < 0:
+            if self.hp <= 0:
                 self.smert = True
             elif self.hp < self.h:
                 self.h = self.hp
@@ -492,12 +521,7 @@ class Vrag(arcade.Sprite):
             self.mech.draw()
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.smert:
-            self.storona = 0
-            self.texture = self.smert_tex[self.storona]
-            self.angle = 40
-        else:
-            self.mech.update_animation()
+        self.mech.update_animation()
 
     def return_force(self, xy=str()):
         if not self.is_on_ground:
@@ -506,5 +530,6 @@ class Vrag(arcade.Sprite):
             return self.force_x
         if xy == 'y':
             return self.force_y
+
 
 

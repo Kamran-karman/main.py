@@ -34,7 +34,7 @@ class Chasti:
 class Igra1GlavaViev(arcade.View):
     def __init__(self):
         super().__init__()
-        arcade.set_background_color((255, 182, 193))
+        arcade.set_background_color((255, 182, 193, 1))
         self.f = False
 
         # Переменные для частиц
@@ -108,7 +108,7 @@ class Igra1GlavaViev(arcade.View):
 
         self.vrag_list = arcade.SpriteList()
 
-        self.igrok = pers.IgrokVoyslav(self.vrag_list)
+        self.igrok = pers.BetaMaster(self.vrag_list)
 
         vrag = pers.Vrag(self.igrok, self.sprite_list, self.vrag_list)
         vrag._position = 500, 400
@@ -134,7 +134,6 @@ class Igra1GlavaViev(arcade.View):
             self.fizika.add_sprite(vrag, 2, 1, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                    max_horizontal_velocity=200,
                                    moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
-        print(self.kamera.zoom)
 
     def on_draw(self):
         self.kamera.use()
@@ -162,7 +161,7 @@ class Igra1GlavaViev(arcade.View):
             if self.zoom:
                 if self.s_zoom <= 180:
                     self.kamera.zoom -= 1 / 1800
-        elif self.zoom1:
+        if self.zoom1:
             self.s_zoom1 += 1
             if self.s_zoom1 > 180:
                 self.s_zoom1 = 0
@@ -170,6 +169,7 @@ class Igra1GlavaViev(arcade.View):
             if self.zoom1:
                 if self.s_zoom1 <= 180:
                     self.kamera.zoom += 1 / 1800
+
         self.igrok.on_update()
         for vrag in self.vrag_list:
             if vrag.smert:
@@ -221,6 +221,9 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.step()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.RCTRL:
+            self.igrok.veter_otalk.udar = True
+
         if symbol == arcade.key.RSHIFT:
             self.igrok.shcit.block1 = True
 
@@ -234,9 +237,6 @@ class Igra1GlavaViev(arcade.View):
 
         if symbol == arcade.key.SPACE:
             self.igrok.udar = True
-
-        if symbol == arcade.key.RCTRL:
-            self.igrok.veter_otalk.udar = True
 
         if symbol == arcade.key.NUM_2:
             self.igrok.streliPeruna.udar = True
@@ -295,4 +295,3 @@ viev1.setup()
 win.show_view(viev1)
 
 arcade.run()
-

@@ -47,6 +47,7 @@ class Igra1GlavaViev(arcade.View):
         self.igrok = None
 
         self.vrag_list = None
+        self.zhivie_vrag_list = None
         self.v_drug_list = None
 
         self.walls_list = None
@@ -77,6 +78,7 @@ class Igra1GlavaViev(arcade.View):
 
         self.sprite_list = arcade.SpriteList()
         self.v_drug_list = arcade.SpriteList()
+        self.vrag_list = arcade.SpriteList()
 
         self.walls_list = arcade.SpriteList()
         for x in range(-10000, 10000, 128):
@@ -94,22 +96,24 @@ class Igra1GlavaViev(arcade.View):
             wall.position = x, -192
             self.walls_list.append(wall)
 
-        self.vrag_list = arcade.SpriteList()
+        self.zhivie_vrag_list = arcade.SpriteList()
 
         self.igrok = pers.Voyslav(self.vrag_list)
         self.igrok.position = IGROK_POSITION
         for x in range(200, 600, 100):
-            vrag = pers.Vrag(self.igrok, self.sprite_list, self.vrag_list)
+            vrag = pers.Vrag(self.igrok, self.sprite_list, self.zhivie_vrag_list)
             vrag._position = x, 200
+            self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
         for x in range(-600, -200, 100):
-            vrag = pers.Vrag(self.igrok, self.sprite_list, self.vrag_list)
+            vrag = pers.Vrag(self.igrok, self.sprite_list, self.zhivie_vrag_list)
             vrag._position = x, 200
+            self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
-        for vrag in self.vrag_list:
-            vrag.v_drug_list = self.vrag_list
+        for vrag in self.zhivie_vrag_list:
+            vrag.v_drug_list = self.zhivie_vrag_list
 
         self.igrok.sprite_list = self.vrag_list
 
@@ -120,7 +124,7 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.add_sprite_list(self.walls_list, friction=WALL_FRICTION, collision_type=WALL_CT,
                                     body_type=arcade.PymunkPhysicsEngine.STATIC)
 
-        for vrag in self.vrag_list:
+        for vrag in self.zhivie_vrag_list:
             self.fizika.add_sprite(vrag, 2, 1, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                    max_horizontal_velocity=200,
                                    moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
@@ -131,27 +135,27 @@ class Igra1GlavaViev(arcade.View):
         self.clear()
 
         self.smert_list1.draw()
-        self.vrag_list.draw()
+        self.zhivie_vrag_list.draw()
         self.igrok.draw()
         self.igrok.update_animation()
         self.smert_list2.draw()
 
         self.walls_list.draw()
 
-        for vrag in self.vrag_list:
+        for vrag in self.zhivie_vrag_list:
             vrag.draw()
             vrag.update_animation()
 
     def on_update(self, delta_time: float):
         self.igrok.on_update()
 
-        for vrag in self.vrag_list:
+        for vrag in self.zhivie_vrag_list:
             if vrag.smert:
                 if random.randint(0, 1) == 1:
                     self.smert_list1.append(vrag)
                 else:
                     self.smert_list2.append(vrag)
-                self.vrag_list.remove(vrag)
+                self.zhivie_vrag_list.remove(vrag)
                 self.fizika.remove_sprite(vrag)
 
             else:
@@ -187,7 +191,7 @@ class Igra1GlavaViev(arcade.View):
         else:
             self.fizika.set_friction(self.igrok, 1)
 
-        if self.igrok.molniya.udar and self.s1 == 0 and self.igrok.molniya.s_kd >= 300 and self.igrok.molniya.s > 3:
+        if self.igrok.molniya.udar and self.s1 == 0 and self.igrok.molniya.s_kd >= 300 and self.igrok.molniya.s >= 3:
             self.s1 += 1
             poz = self.igrok.molniya.koordinati()
             self.fizika.set_position(self.igrok, poz)

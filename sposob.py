@@ -313,10 +313,58 @@ class StreliPeruna(arcade.Sprite):
 
 
 class SharMolniay(arcade.Sprite):
-    def __init__(self, igrok, sprite_list):
+    def __init__(self, pers, sprite_list):
         super().__init__()
         self.sprite_list = sprite_list
-        self.igrok = igrok
+        self.pers = pers
+
+        self.tex_shar = arcade.load_texture_pair('nuzhno/radius_porazheniya.png')
+        self.texture = self.tex_shar[1]
+        self.scale = 0.01
+
+        self.radius = hit_box_and_radius.Radius(self.scale)
+        self.radius1 = hit_box_and_radius.Radius(0.5)
+
+        self.udar = False
+        self.zaryad = False
+
+        self.s = 0
+        self.s_kd = S_KD_SHAR_MOLNII
+
+        self.slovar = {}
+        self.s_slovar = 0
+
+        self.fizika = arcade.PhysicsEnginePlatformer(self)
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.s_kd += 1
+
+        if self.s_slovar == 0:
+            self.s_slovar += 1
+            for sprite in self.sprite_list:
+                self.slovar.update({sprite: False})
+
+        if len(self.slovar) != len(self.sprite_list):
+            self.s_slovar = 0
+
+        if self.s_kd < S_KD_SHAR_MOLNII:
+            self.zaryad = False
+
+        if self.zaryad:
+            pass
+
+        if self.s > 5:
+            self.s = 0
+            self.zaryad = False
+            self.s_kd = 0
+
+        if self.zaryad:
+            self.s += 1
+        else:
+            for i in self.slovar:
+                self.slovar[i] = False
+
+        self.fizika.update()
 
 
 # Стихия ветра

@@ -8,8 +8,6 @@ KOOR_X = 100
 KOOR_Y = 500
 D_ZONE = 0.005
 
-STOP = 11
-
 HP_VRAG = 250
 
 
@@ -76,7 +74,7 @@ class Voyslav(arcade.Sprite):
             self.storona = 0
 
         for sprite in self.sprite_list:
-            if arcade.check_for_collision(sprite, self.rad) and abs(dx) < D_ZONE:
+            if self.rad.check_collision(sprite) and abs(dx) < D_ZONE:
                 if self.center_x > sprite.center_x:
                     self.storona = 1
                 elif self.center_x < sprite.center_x:
@@ -235,7 +233,7 @@ class BetaMaster(arcade.Sprite):
             self.storona = 0
 
         for sprite in self.sprite_list:
-            if arcade.check_for_collision(sprite, self.rad) and abs(dx) < D_ZONE:
+            if self.rad.check_collision(sprite) and abs(dx) < D_ZONE:
                 if self.center_x > sprite.center_x:
                     self.storona = 1
                 elif self.center_x < sprite.center_x:
@@ -363,7 +361,7 @@ class Vrag(arcade.Sprite):
 
         self.udar = False
         self.go = True
-        self.d_zone = 40
+        self.d_zone = 25
         self.s = 0
 
         self.kast_scena = kast_scena
@@ -409,7 +407,7 @@ class Vrag(arcade.Sprite):
             elif dx > D_ZONE and self.storona == 1:
                 self.storona = 0
 
-            if arcade.check_for_collision(self.radius_prig, self.igrok):
+            if self.radius_prig.check_collision(self.igrok):
                 if self.center_x > self.igrok.center_x:
                     self.storona = 1
                 elif self.center_x < self.igrok.center_x:
@@ -420,49 +418,49 @@ class Vrag(arcade.Sprite):
             if not self.go:
                 self.s += 1
 
-            if arcade.check_for_collision(self.igrok, self.radius_vid) and not self.kast_scena:
+            if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
 
                 if self.igrok.center_x < self.radius_vid.center_x:
-                    if abs(self.igrok.right - self.left) <= 50:
+                    if abs(self.igrok.right - self.left) <= self.d_zone:
                         self.force_x, self.force_y = 0., 0.
                         self.go = False
                     else:
                         self.force_x = -15000
                         self.go = True
 
-                        if (arcade.check_for_collision_with_list(self.radius_prig, self.sprite_list) and
+                        if (self.radius_prig.check_collision(sprite_list=self.sprite_list) and
                                 self.is_on_ground and abs(dx) < D_ZONE):
                             for sprite in self.sprite_list:
-                                if arcade.check_for_collision(self.radius_prig, sprite):
+                                if self.radius_prig.check_collision(sprite):
                                     self.force_y = 50000
                                     break
                                 else:
                                     self.force_y = 0
 
                 elif self.igrok.center_x > self.radius_vid.center_x:
-                    if abs(self.right - self.igrok.left) <= 50:
+                    if abs(self.right - self.igrok.left) <= self.d_zone:
                         self.force_x, self.force_y = 0., 0.
                         self.go = False
                     else:
                         self.force_x = 15000
                         self.go = True
 
-                        if (arcade.check_for_collision_with_list(self.radius_prig, self.sprite_list) and
+                        if (self.radius_prig.check_collision(sprite_list=self.sprite_list) and
                                 self.is_on_ground and abs(dx) < D_ZONE):
                             for sprite in self.sprite_list:
-                                if arcade.check_for_collision(self.radius_prig, sprite):
+                                if self.radius_prig.check_collision(sprite):
                                     self.force_y = 50000
                                     break
                                 else:
                                     self.force_y = 0
 
                 for drug in self.v_drug_list:
-                    if (drug.center_x > self.center_x and abs(self.right - drug.left) <= 50 and not drug.go
+                    if (drug.center_x > self.center_x and abs(self.right - drug.left) <= self.d_zone and not drug.go
                             and self.igrok.center_x > self.center_x):
                         self.go = False
                         self.force_x, self.force_y = 0., 0.
                         break
-                    elif (drug.center_x < self.center_x and abs(self.left - drug.right) <= 50 and not drug.go
+                    elif (drug.center_x < self.center_x and abs(self.left - drug.right) <= self.d_zone and not drug.go
                           and self.igrok.center_x < self.center_x):
                         self.go = False
                         self.force_x, self.force_y = 0., 0.
@@ -510,7 +508,7 @@ class Vrag(arcade.Sprite):
     def on_update(self, delta_time: float = 1 / 60):
         self.radius_prig.position = self.position
         self.mech.storona = self.storona
-        if arcade.check_for_collision(self.radius_ataki, self.igrok):
+        if self.radius_ataki.check_collision(self.igrok):
             self.mech.udar = True
         else:
             self.mech.udar = False
@@ -530,6 +528,5 @@ class Vrag(arcade.Sprite):
             return self.force_x
         if xy == 'y':
             return self.force_y
-
 
 

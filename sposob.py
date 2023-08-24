@@ -10,13 +10,18 @@ RED = (255, 0, 0)
 ZASHCITA = 0
 ORUZHIE = 1
 
+# ___Характеристики способностей___
+
+# __SharMolniay__
+SKOROST_SHAR_MOLNII = 5
+S_KD_SHAR_MOLNII = 300
+
 
 # Стихия молнии
 class Molniay(arcade.Sprite):
     def __init__(self, sprite_list, igrok):
         super().__init__()
         self.uron = 250
-        self.d = 0
 
         self.radius = hit_box_and_radius.Radius()
         self.sprite_list = sprite_list
@@ -68,7 +73,6 @@ class Molniay(arcade.Sprite):
                             if pos == sprite and not self.slovar[pos]:
                                 self.slovar[pos] = True
                                 sprite.hp -= self.uron
-                                self.d += 1
                                 break
 
                 arcade.draw_line(stx, sty, enx, eny, MOL_BLUE, 30)
@@ -80,7 +84,7 @@ class Molniay(arcade.Sprite):
                 radius = hit_box_and_radius.Radius()
                 radius.position = enx, eny
                 w = 0
-                #print(f'stx: {stx}, sty: {sty}, enx: {enx}, eny: {eny}')
+
                 while w < 3:
                     if radius.check_collision(sprite_list=self.sprite_list):
                         if self.igrok.position == (stx, sty):
@@ -263,14 +267,14 @@ class StreliPeruna(arcade.Sprite):
         if self.udar and self.rad.check_collision(sprite_list=self.sprite_list):
             spis_pos = []
             spis1 = []
-            spis_xy = []
+            spis_rast = []
             for sprite in self.sprite_list:
                 if self.rad.check_collision(sprite):
                     spis_pos.append(sprite.position)
                     rx = abs(self.igrok.center_x - sprite.center_x)
                     ry = abs(self.igrok.center_y - sprite.center_y)
                     rast = math.hypot(rx, ry)
-                    spis_xy.append((rx, ry))
+                    spis_rast.append((rx, ry))
                     spis1.append(rast)
 
             for i in spis1:
@@ -278,7 +282,7 @@ class StreliPeruna(arcade.Sprite):
                     index = spis1.index(max(spis1))
                     spis_pos.pop(index)
                     spis1.remove(max(spis1))
-                    spis_xy.pop(index)
+                    spis_rast.pop(index)
                 elif len(spis1) < 1:
                     return
                 else:
@@ -384,14 +388,10 @@ class VeterOtalkivanie(arcade.Sprite):
         self.s = 0
         self.s1 = 300
 
-        self.rad = hit_box_and_radius.Radius(0.5)
-        platfo = arcade.SpriteList()
-        platfo.append(self.rad)
-        for i in range(100):
-            rad = hit_box_and_radius.Radius(0.5)
-            platfo.append(rad)
-        i = arcade.Sprite('nuzhno/radius_porazheniya.png')
-        self.fizika = arcade.PhysicsEnginePlatformer(i, platfo)
+        #self.rad = hit_box_and_radius.Radius(0.5)
+        self.tex = arcade.load_texture_pair('nuzhno/radius_porazheniya.png')
+        self.scale = 0.5
+        self.texture = self.tex[1]
 
     def on_update(self, delta_time: float = 1 / 60):
         if self.s3 == 0:
@@ -411,19 +411,19 @@ class VeterOtalkivanie(arcade.Sprite):
 
         if self.udar:
             start = self.igrok.position
-            if self.rad.change_x == 0:
-                self.rad.position = start
+            if self.change_x == 0:
+                self.position = start
 
             if self.igrok.storona == 0 and not self.atak:
                 self.atak = True
-                self.rad.change_x = 10
+                self.change_x = 10
             elif self.igrok.storona == 1 and not self.atak:
                 self.atak = True
-                self.rad.change_x = -10
+                self.change_x = -10
         else:
             self.d = False
             self.atak = False
-            self.rad.change_x = 0
+            self.change_x = 0
             self.s = 0
 
         if self.s >= 120:
@@ -433,7 +433,7 @@ class VeterOtalkivanie(arcade.Sprite):
             self.s += 1
 
         for sprite in self.sprite_list:
-            if self.rad.check_collision(sprite) and self.udar:
+            if arcade.check_for_collision(sprite, self) and self.udar:
                 for i in self.slovar:
                     if i == sprite and not self.slovar[i]:
                         self.slovar[i] = True
@@ -443,11 +443,8 @@ class VeterOtalkivanie(arcade.Sprite):
             for i in self.slovar:
                 self.slovar[i] = False
 
-        self.fizika.update()
-
-    def draw(self, *, filter=None, pixelated=None, blend_function=None):
-        if self.s > 0:
-            self.rad.draw()
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.texture = self.tex[self.igrok.storona]
 
 
 # Ближний юой
@@ -621,9 +618,12 @@ class Shchit(arcade.Sprite):
             self.texture = self.tex_shcit[self.pers.storona]
 
 
+
+# Стихия земли
+
+
 class Block:
     def __init__(self, pers):
         pass
-
 
 

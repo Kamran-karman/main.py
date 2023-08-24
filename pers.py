@@ -209,7 +209,6 @@ class BetaMaster(arcade.Sprite):
         self.x_odometr = 0
 
         self.rad = hit_box_and_radius.KvadratRadius(self.scale)
-        self.dvig = False
 
         self.zashcita = False
 
@@ -314,6 +313,7 @@ class BetaMaster(arcade.Sprite):
         self.shcit.on_update()
 
         self.veter_otalk.on_update()
+        self.veter_otalk.update()
         self.gnev_Tora.on_update()
 
     def update_animation(self, delta_time: float = 1 / 60):
@@ -327,7 +327,9 @@ class BetaMaster(arcade.Sprite):
         self.molniya.update_animation()
         self.gnev_Tora.update_animation()
         self.streliPeruna.update_animation()
-        self.veter_otalk.draw()
+        if self.veter_otalk.s > 0:
+            self.veter_otalk.draw()
+        self.veter_otalk.update_animation()
 
 
 class Vrag(arcade.Sprite):
@@ -362,7 +364,6 @@ class Vrag(arcade.Sprite):
         self.udar = False
         self.go = True
         self.d_zone = 25
-        self.s = 0
 
         self.kast_scena = kast_scena
 
@@ -414,9 +415,6 @@ class Vrag(arcade.Sprite):
                     self.storona = 0
 
             self.is_on_ground = physics_engine.is_on_ground(self)
-
-            if not self.go:
-                self.s += 1
 
             if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
 
@@ -528,5 +526,6 @@ class Vrag(arcade.Sprite):
             return self.force_x
         if xy == 'y':
             return self.force_y
+
 
 

@@ -21,7 +21,7 @@ class Voyslav(arcade.Sprite):
         self.smert = False
         self.minus_hp = False
 
-        self.reakciay = 1000
+        self.reakciya = 1000
 
         self.block1 = False
         self.block = False
@@ -181,7 +181,7 @@ class BetaMaster(arcade.Sprite):
         self.smert = False
         self.minus_hp = False
 
-        self.reakciay = 1000
+        self.reakciya = 1000
 
         self.block1 = False
         self.block = False
@@ -346,7 +346,7 @@ class Vrag(arcade.Sprite):
         self.hp = HP_VRAG
         self.h = HP_VRAG
         self.smert = False
-        self.reakciay = 10
+        self.reakciya = 10
         self.block = False
         self.block1 = False
         self.s_block = 0

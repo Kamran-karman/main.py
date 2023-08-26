@@ -8,7 +8,7 @@ KOOR_X = 100
 KOOR_Y = 500
 D_ZONE = 0.005
 
-HP_VRAG = 250
+HP_VRAG = 500
 
 
 class Voyslav(arcade.Sprite):
@@ -66,6 +66,7 @@ class Voyslav(arcade.Sprite):
         self.molniya = sposob.Molniay(self.sprite_list, self)
         self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
         self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
+        self.shar_mol = sposob.SharMolniay(self, self.sprite_list)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         if dx < -D_ZONE and self.storona == 0:
@@ -153,6 +154,8 @@ class Voyslav(arcade.Sprite):
         self.shcit.on_update()
 
         self.gnev_Tora.on_update()
+        self.shar_mol.on_update()
+        self.shar_mol.update()
 
     def update_animation(self, delta_time: float = 1 / 60):
         if self.block or self.block1 or self.udar:
@@ -160,6 +163,9 @@ class Voyslav(arcade.Sprite):
 
         self.shcit.update_animation()
 
+        if (self.shar_mol.udar and self.shar_mol.zaryad_b) or self.shar_mol.zaryad:
+            self.shar_mol.draw()
+        self.shar_mol.update_animation()
         self.molniya.update_animation()
         self.gnev_Tora.update_animation()
         self.streliPeruna.update_animation()
@@ -328,7 +334,8 @@ class BetaMaster(arcade.Sprite):
         self.gnev_Tora.update_animation()
         self.streliPeruna.update_animation()
         if self.veter_otalk.s > 0:
-            self.veter_otalk.draw()
+            pass
+            #self.veter_otalk.draw()
         self.veter_otalk.update_animation()
 
 
@@ -341,6 +348,7 @@ class Vrag(arcade.Sprite):
         self.smert = False
         self.reakciay = 10
         self.block = False
+        self.block1 = False
         self.s_block = 0
         self.pariv = False
         self.minus_hp = False
@@ -526,6 +534,3 @@ class Vrag(arcade.Sprite):
             return self.force_x
         if xy == 'y':
             return self.force_y
-
-
-

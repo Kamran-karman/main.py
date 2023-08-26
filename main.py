@@ -199,6 +199,9 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.step()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.RCTRL:
+            self.igrok.shar_mol.zaryad = True
+
         if symbol == arcade.key.RSHIFT:
             self.igrok.shcit.block1 = True
 
@@ -234,6 +237,10 @@ class Igra1GlavaViev(arcade.View):
                 self.fizika.apply_force(self.igrok, force)
 
     def on_key_release(self, _symbol: int, _modifiers: int):
+        if _symbol == arcade.key.RCTRL:
+            self.igrok.shar_mol.udar = True
+            self.igrok.shar_mol.zaryad = False
+
         if _symbol == arcade.key.RSHIFT:
             self.igrok.shcit.block1 = False
 

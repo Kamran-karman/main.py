@@ -112,6 +112,12 @@ class Igra1GlavaViev(arcade.View):
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
+        for x in range(700, 1000, 150):
+            voin_in = pers.Voin_Innocentii(self.igrok, self.sprite_list, self.v_drug_list)
+            voin_in.position = x, 200
+            self.zhivie_vrag_list.append(voin_in)
+            self.vrag_list.append(voin_in)
+
         for vrag in self.zhivie_vrag_list:
             vrag.v_drug_list = self.zhivie_vrag_list
 
@@ -136,15 +142,14 @@ class Igra1GlavaViev(arcade.View):
 
         self.smert_list1.draw()
         self.zhivie_vrag_list.draw()
+        for vrag in self.zhivie_vrag_list:
+            vrag.draw()
+            vrag.update_animation()
         self.igrok.draw()
         self.igrok.update_animation()
         self.smert_list2.draw()
 
         self.walls_list.draw()
-
-        for vrag in self.zhivie_vrag_list:
-            vrag.draw()
-            vrag.update_animation()
 
     def on_update(self, delta_time: float):
         self.igrok.on_update()

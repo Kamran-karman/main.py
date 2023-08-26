@@ -617,6 +617,8 @@ class VeterOtalkivanie(arcade.Sprite):
 class Mech(arcade.Sprite):
     def __init__(self, pers, sprite_list, storona, v_ataki=(30, 10)):
         super().__init__()
+        self.tip = COLD_ORUZHIE
+        
         self.uron = 50
 
         self.pers = pers
@@ -682,6 +684,8 @@ class Mech(arcade.Sprite):
 class Shchit(arcade.Sprite):
     def __init__(self, pers, sprite_list):
         super().__init__()
+        self.tip = ZASHCHITA
+        
         self.uron = URON_SHCHIT
         
         self.pers = pers
@@ -690,7 +694,6 @@ class Shchit(arcade.Sprite):
         self.tex_shcit = arcade.load_texture_pair('nuzhno/shcit.png')
         self.tex_udar = arcade.load_texture_pair('nuzhno/shcit_udar.png')
         self.texture = self.tex_shcit[1]
-        self.zashcita = ZASHCITA
 
         self.block = False
         self.block1 = False

@@ -767,15 +767,15 @@ def block_func(pers, sprite, force=None):
     r = 10
     if sprite.block1:
         return True
-    if sprite.reakciay < pers.reakciay and force is None:
-        if sprite.reakciay * r <= pers.reakciay:
+    if sprite.reakciya < pers.reakciya and force is None:
+        if sprite.reakciya * r <= pers.reakciya:
             pers.block = True
             return True
         else:
             r -= 0.1
             shanc = 99
             while r > 1:
-                if sprite.reakciay * (r + 0.1) < sprite.reakciay * r <= pers.reakciay:
+                if sprite.reakciya * (r + 0.1) < sprite.reakciya * r <= pers.reakciya:
                     break
                 r -= 0.1
                 shanc -= 1
@@ -788,14 +788,14 @@ def block_func(pers, sprite, force=None):
                 shanc -= 1
 
             return False
-    elif sprite.reakciay > pers.reakciay and force is None:
-        if pers.reakciay * r <= sprite.reakciay:
+    elif sprite.reakciya > pers.reakciya and force is None:
+        if pers.reakciya * r <= sprite.reakciya:
             return False
         else:
             r -= 0.1
             shanc = 99
             while r > 1:
-                if sprite.reakciay * (r + 0.1) < sprite.reakciay * r <= pers.reakciay:
+                if sprite.reakciya * (r + 0.1) < sprite.reakciya * r <= pers.reakciya:
                     break
                 r -= 0.1
                 shanc -= 1
@@ -808,7 +808,7 @@ def block_func(pers, sprite, force=None):
 
             pers.block = True
             return True
-    elif sprite.reakciay == pers.reakciay and force is None:
+    elif sprite.reakciya == pers.reakciya and force is None:
         if random.randint(1, 2) == 1:
             pers.block = True
             return True

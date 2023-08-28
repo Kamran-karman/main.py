@@ -8,12 +8,19 @@ KOOR_X = 100
 KOOR_Y = 500
 D_ZONE = 0.005
 
-# __Vrag__
+# ___Vrag___
 HP_VRAG = 500
 
-# __Voin_Innocentii__
+# ___Voin_Innocentii___
 HP_V_I = 1000
 REAKCIYA_V_I = 65
+
+# ___Gromila___
+HP_GROMILA = 2000
+
+URON_GROMILA = 100
+
+REAKCIYA_GROMILA = 10
 
 
 class Pers(arcade.Sprite):
@@ -37,6 +44,8 @@ class Pers(arcade.Sprite):
         self.s_udar = 0
         self.s1_udar = 0
 
+        self.uron = 0
+
         self.storona = 1
 
         self.sch_walk_tex = 0
@@ -49,8 +58,12 @@ class Pers(arcade.Sprite):
         self.kvadrat_radius = hit_box_and_radius.KvadratRadius(self.scale)
 
         self.oruzh_list = arcade.SpriteList()
+        self.tip_slovar = {}
 
         self.pers = ''
+
+        self.return_position = True
+        self.rivok = False
 
     def update_hp(self):
         if self.hp >= self.h:
@@ -112,13 +125,16 @@ class Pers(arcade.Sprite):
                 zashchita.block = True
                 self.s_block += 1
 
-    def walk(self):
+    def walk_animation(self):
         if abs(self.x_odometr) > 15:
             self.x_odometr = 0
             self.sch_walk_tex += 1
             if self.sch_walk_tex > 7:
                 self.sch_walk_tex = 0
             self.texture = self.walk_t[self.sch_walk_tex][self.storona]
+
+    def return_position_func(self):
+        return self.position
 
 
 class Voyslav(Pers):
@@ -147,8 +163,7 @@ class Voyslav(Pers):
         self.texture = self.idle_tex[0]
 
         self.shcit = sposob.Shchit(self, self.sprite_list)
-        if self.shcit.tip == 0:
-            self.zashcita = True
+        self.tip_slovar.update(self.shcit.tip)
 
         self.oruzh_list = arcade.SpriteList()
 
@@ -156,6 +171,10 @@ class Voyslav(Pers):
         self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
         self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
         self.shar_mol = sposob.SharMolniay(self, self.sprite_list)
+
+        for i in self.tip_slovar:
+            if i == 0:
+                self.zashcita = True
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.update_storona(dx, physics_engine)
@@ -181,7 +200,7 @@ class Voyslav(Pers):
             self.texture = self.idle_tex[self.storona]
             return
 
-        self.walk()
+        self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60):
         self.update_hp()
@@ -259,7 +278,7 @@ class BetaMaster(arcade.Sprite):
             self.zashcita = True
 
         self.oruzh_list = arcade.SpriteList()
-        self.mech = sposob.Mech(self, self.sprite_list, self.storona, (10, 5))
+        self.mech = sposob.Mech(self, self.sprite_list, (10, 5))
         self.oruzh_list.append(self.mech)
 
         self.molniya = sposob.Molniay(self.sprite_list, self)
@@ -350,7 +369,6 @@ class BetaMaster(arcade.Sprite):
 
         self.rad.position = self.position
 
-        self.mech.storona = self.storona
         self.mech.on_update()
         self.shcit.on_update()
 
@@ -375,90 +393,30 @@ class BetaMaster(arcade.Sprite):
         self.veter_otalk.update_animation()
 
 
-class BetaBalvanchik(arcade.Sprite):
+class Vrag(Pers):
     def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
-        super().__init__()
-
-        self.hp = HP_VRAG
-        self.h = HP_VRAG
-        self.smert = False
-        self.reakciya = 10
-        self.block1 = False
-        self.block = False
-        self.s_block = 0
-        self.pariv = False
-        self.minus_hp = False
-
+        super().__init__(sprite_list)
         self.force_x = 0
         self.force_y = 0
 
-        self.scale = 1.2
-        self.storona = 1
-
         self.radius_vid = hit_box_and_radius.Radius(5)
         self.radius_ataki = hit_box_and_radius.Radius(0.25)
-        self.radius_prig = hit_box_and_radius.KvadratRadius(self.scale)
 
-        self.sprite_list = sprite_list
         self.igrok = igrok
         self.igrok_list = arcade.SpriteList()
         self.igrok_list.append(igrok)
         self.v_drug_list = v_drug_list
 
-        self.udar = False
         self.go = True
         self.d_zone = 25
+        self.stop1 = False
 
         self.kast_scena = kast_scena
 
-        self.sch_walk_tex = 0
-
-        main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
-        self.idle = arcade.load_texture_pair(f"{main_patch}_idle.png")
-        self.jump_tex = arcade.load_texture_pair(f"{main_patch}_jump.png")
-        self.fall_tex = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.smert_tex = arcade.load_texture_pair('nuzhno/smert.png')
-
-        self.walk_t = []
-        for i in range(8):
-            tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
-            self.walk_t.append(tex)
-        self.texture = self.idle[0]
-
-        self.is_on_ground = True
-        self.x_odometr = 0
-
-        self.oruzh_list = arcade.SpriteList()
-        self.mech = sposob.Mech(self, self.igrok_list, self.storona, (60, 20))
-        self.oruzh_list.append(self.mech)
-
-    def pymunk_moved(self, physics_engine, dx, dy, d_angle):
-        if self.hp >= self.h:
-            self.minus_hp = False
+    def ii(self, dx, physics_engine):
+        self.radius_vid.position = self.radius_ataki.position = self.kvadrat_radius.position = self.position
         if not self.smert:
-            if self.hp <= 0:
-                self.smert = True
-            elif self.hp < self.h:
-                self.h = self.hp
-                self.minus_hp = True
-                print(self.hp)
-            elif self.hp > self.h:
-                self.h = self.hp
-
-            self.radius_vid.position = self.radius_ataki.position = self.radius_prig.position = self.position
-
-            if dx < -D_ZONE and self.storona == 0:
-                self.storona = 1
-            elif dx > D_ZONE and self.storona == 1:
-                self.storona = 0
-
-            if self.radius_prig.check_collision(self.igrok):
-                if self.center_x > self.igrok.center_x:
-                    self.storona = 1
-                elif self.center_x < self.igrok.center_x:
-                    self.storona = 0
-
-            self.is_on_ground = physics_engine.is_on_ground(self)
+            self.update_storona(dx, physics_engine)
 
             if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
 
@@ -469,11 +427,12 @@ class BetaBalvanchik(arcade.Sprite):
                     else:
                         self.force_x = -15000
                         self.go = True
+                        self.stop1 = False
 
-                        if (self.radius_prig.check_collision(sprite_list=self.sprite_list) and
+                        if (self.kvadrat_radius.check_collision(sprite_list=self.sprite_list) and
                                 self.is_on_ground and abs(dx) < D_ZONE):
                             for sprite in self.sprite_list:
-                                if self.radius_prig.check_collision(sprite):
+                                if self.kvadrat_radius.check_collision(sprite):
                                     self.force_y = 50000
                                     break
                                 else:
@@ -486,11 +445,12 @@ class BetaBalvanchik(arcade.Sprite):
                     else:
                         self.force_x = 15000
                         self.go = True
+                        self.stop1 = False
 
-                        if (self.radius_prig.check_collision(sprite_list=self.sprite_list) and
+                        if (self.kvadrat_radius.check_collision(sprite_list=self.sprite_list) and
                                 self.is_on_ground and abs(dx) < D_ZONE):
                             for sprite in self.sprite_list:
-                                if self.radius_prig.check_collision(sprite):
+                                if self.kvadrat_radius.check_collision(sprite):
                                     self.force_y = 50000
                                     break
                                 else:
@@ -500,33 +460,59 @@ class BetaBalvanchik(arcade.Sprite):
                     if (drug.center_x > self.center_x and abs(self.right - drug.left) <= self.d_zone and not drug.go
                             and self.igrok.center_x > self.center_x):
                         self.go = False
-                        self.force_x, self.force_y = 0., 0.
+                        self.force_x = 0.
+                        self.stop1 = True
                         break
                     elif (drug.center_x < self.center_x and abs(self.left - drug.right) <= self.d_zone and not drug.go
                           and self.igrok.center_x < self.center_x):
                         self.go = False
-                        self.force_x, self.force_y = 0., 0.
-                        break
-                    elif (abs(self.right - drug.left) <= self.d_zone and drug.center_x > self.center_x
-                          and self.igrok.center_x > self.center_x):
                         self.force_x = 0.
+                        self.stop1 = True
                         break
-                    elif (abs(self.left - drug.right) <= self.d_zone and drug.center_x < self.center_x
-                          and self.igrok.center_x < self.center_x):
-                        self.force_x = 0.
-                        break
+                    else:
+                        self.stop1 = False
             else:
+                self.stop1 = False
                 self.go = False
                 self.force_x, self.force_y = 0., 0.
 
-            self.x_odometr += dx
+    def return_force(self, xy: str):
+        if not self.is_on_ground:
+            self.force_y = 0
+        if xy == 'x':
+            return self.force_x
+        if xy == 'y':
+            return self.force_y
 
-            if self.s_block >= 30:
-                self.s_block = 0
-                self.block = False
 
-            if self.block:
-                self.texture = self.jump_tex[self.storona]
+class BetaBalvanchik(Vrag):
+    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+        self.pers = 'betabalvanchik'
+
+        self.hp = HP_VRAG
+
+        self.scale = 1.2
+
+        main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
+        self.idle = arcade.load_texture_pair(f"{main_patch}_idle.png")
+        self.jump_tex = arcade.load_texture_pair(f"{main_patch}_jump.png")
+        self.fall_tex = arcade.load_texture_pair(f"{main_patch}_fall.png")
+        self.smert_tex = arcade.load_texture_pair('nuzhno/smert.png')
+
+        for i in range(8):
+            tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
+            self.walk_t.append(tex)
+        self.texture = self.idle[0]
+
+        self.mech = sposob.Mech(self, self.igrok_list, (60, 20))
+        self.oruzh_list.append(self.mech)
+
+    def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        if not self.smert:
+            self.ii(dx, physics_engine)
+
+            self.udar_and_block(None, self.oruzh_list)
 
             if not self.is_on_ground:
                 if dy > D_ZONE:
@@ -540,16 +526,11 @@ class BetaBalvanchik(arcade.Sprite):
                 self.texture = self.idle[self.storona]
                 return
 
-            if abs(self.x_odometr) > 15:
-                self.x_odometr = 0
-                self.sch_walk_tex += 1
-                if self.sch_walk_tex > 7:
-                    self.sch_walk_tex = 0
-                self.texture = self.walk_t[self.sch_walk_tex][self.storona]
+            self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60):
-        self.radius_prig.position = self.position
-        self.mech.storona = self.storona
+        self.update_hp()
+
         if self.radius_ataki.check_collision(self.igrok):
             self.mech.udar = True
         else:
@@ -572,104 +553,14 @@ class BetaBalvanchik(arcade.Sprite):
             return self.force_y
 
 
-class Vrag(Pers):
-    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
-        super().__init__(sprite_list)
-
-        self.force_x = 0
-        self.force_y = 0
-
-        self.radius_vid = hit_box_and_radius.Radius(5)
-        self.radius_ataki = hit_box_and_radius.Radius(0.25)
-
-        self.igrok = igrok
-        self.igrok_list = arcade.SpriteList()
-        self.igrok_list.append(igrok)
-        self.v_drug_list = v_drug_list
-
-        self.go = True
-        self.d_zone = 25
-
-        self.kast_scena = kast_scena
-
-    def ii(self, dx, physics_engine):
-        self.radius_vid.position = self.radius_ataki.position = self.kvadrat_radius.position = self.position
-        if not self.smert:
-            self.update_storona(dx, physics_engine)
-
-            if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
-
-                if self.igrok.center_x < self.radius_vid.center_x:
-                    if abs(self.igrok.right - self.left) <= self.d_zone:
-                        self.force_x, self.force_y = 0., 0.
-                        self.go = False
-                    else:
-                        self.force_x = -15000
-                        self.go = True
-
-                        if (self.kvadrat_radius.check_collision(sprite_list=self.sprite_list) and
-                                self.is_on_ground and abs(dx) < D_ZONE):
-                            for sprite in self.sprite_list:
-                                if self.kvadrat_radius.check_collision(sprite):
-                                    self.force_y = 50000
-                                    break
-                                else:
-                                    self.force_y = 0
-
-                elif self.igrok.center_x > self.radius_vid.center_x:
-                    if abs(self.right - self.igrok.left) <= self.d_zone:
-                        self.force_x, self.force_y = 0., 0.
-                        self.go = False
-                    else:
-                        self.force_x = 15000
-                        self.go = True
-
-                        if (self.kvadrat_radius.check_collision(sprite_list=self.sprite_list) and
-                                self.is_on_ground and abs(dx) < D_ZONE):
-                            for sprite in self.sprite_list:
-                                if self.kvadrat_radius.check_collision(sprite):
-                                    self.force_y = 50000
-                                    break
-                                else:
-                                    self.force_y = 0
-
-                for drug in self.v_drug_list:
-                    if (drug.center_x > self.center_x and abs(self.right - drug.left) <= self.d_zone and not drug.go
-                            and self.igrok.center_x > self.center_x):
-                        self.go = False
-                        self.force_x, self.force_y = 0., 0.
-                        break
-                    elif (drug.center_x < self.center_x and abs(self.left - drug.right) <= self.d_zone and not drug.go
-                          and self.igrok.center_x < self.center_x):
-                        self.go = False
-                        self.force_x, self.force_y = 0., 0.
-                        break
-                    elif (abs(self.right - drug.left) <= self.d_zone and drug.center_x > self.center_x
-                          and self.igrok.center_x > self.center_x):
-                        self.force_x = 0.
-                        break
-                    elif (abs(self.left - drug.right) <= self.d_zone and drug.center_x < self.center_x
-                          and self.igrok.center_x < self.center_x):
-                        self.force_x = 0.
-                        break
-            else:
-                self.go = False
-                self.force_x, self.force_y = 0., 0.
-
-    def return_force(self, xy: str):
-        if not self.is_on_ground:
-            self.force_y = 0
-        if xy == 'x':
-            return self.force_x
-        if xy == 'y':
-            return self.force_y
-
-
-class Voin_Innocentii(Vrag):
+class VoinInnocentii(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+
         self.hp = HP_V_I
         self.reakciya = REAKCIYA_V_I
+
+        self.rivok_distanc = 450
 
         self.scale = 1.1
 
@@ -684,13 +575,22 @@ class Voin_Innocentii(Vrag):
 
         self.texture = self.idle_tex[self.storona]
 
+        self.rivok_sposob = sposob.Rivok(self)
+        self.tip_slovar.update(self.rivok_sposob.tip)
+
+        self.pers = 'voin_innocentii'
+
+        self.dvuruch_mech = sposob.DvuruchMech(self, self.igrok_list)
+        self.oruzh_list.append(self.dvuruch_mech)
+        self.tip_slovar.update(self.dvuruch_mech.tip)
+
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         if not self.smert:
             self.ii(dx, physics_engine)
-            if abs(self.igrok.center_x - self.center_x) > 500:
-                pass
 
             self.udar_and_block(None, self.oruzh_list)
+
+            self.rivok_func()
 
             if not self.is_on_ground:
                 if dy > D_ZONE:
@@ -704,11 +604,63 @@ class Voin_Innocentii(Vrag):
                 self.texture = self.idle_tex[self.storona]
                 return
 
-            self.walk()
+            self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_hp()
+        self.rivok_sposob.update()
+        self.rivok_sposob.on_update()
+        if self.radius_ataki.check_collision(self.igrok):
+            self.dvuruch_mech.udar = True
+        else:
+            self.dvuruch_mech.udar = False
+        self.dvuruch_mech.on_update()
 
-    def rivok(self):
-        self.force_x = 50000
-        return self.force_x
+        if self.rivok_sposob.stop1:
+            self.rivok_sposob.stop1 = False
+            self.return_position = True
+        else:
+            self.return_position = False
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        if not self.rivok_sposob.stop1 and self.rivok_sposob.rivok and self.rivok_sposob.s_kd >= 180:
+            self.rivok_sposob.draw()
+        self.rivok_sposob.update_animation()
+
+        if self.dvuruch_mech.udar:
+            self.dvuruch_mech.draw()
+        self.dvuruch_mech.update_animation()
+
+    def rivok_func(self):
+        if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
+            if self.igrok.center_x > self.radius_vid.center_x:
+                if 150 < abs(self.igrok.left - self.right) <= self.rivok_distanc and not self.stop1:
+                    self.rivok_sposob.rivok = True
+            elif self.igrok.center_x < self.radius_vid.center_x:
+                if 150 < abs(self.igrok.right - self.left) <= self.rivok_distanc and not self.stop1:
+                    self.rivok_sposob.rivok = True
+
+    def return_position_func(self):
+        return self.rivok_sposob.return_positoin()
+
+
+class Gromila(Vrag):
+    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+        self.hp = HP_GROMILA
+        self.uron = URON_GROMILA
+
+        self.reakciya = REAKCIYA_GROMILA
+
+        self.scale = 2
+
+        main_patch = ':resources:images/animated_characters/male_person/malePerson'
+        self.idle_tex = arcade.load_texture_pair(f'{main_patch}_idle.png')
+        self.jump_tex = arcade.load_texture_pair(f'{main_patch}_jump.png')
+        self.fall_tex = arcade.load_texture_pair(f'{main_patch}_fall.png')
+
+        for i in range(8):
+            tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
+            self.walk_t.append(tex)
+
+        self.texture = self.idle_tex[self.storona]

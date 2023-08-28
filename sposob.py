@@ -13,6 +13,97 @@ ORUZHIE = 1
 # ___Характеристики способностей___
 
 # __SharMolniay__
+SKORZASHCHITA = 0
+COLD_ORUZHIE = 1
+DVURUCH_MECH = 1.1
+DAL_ORUZH = 2
+STIHIYA = 3
+FIZ_SPOSOB = 4
+RIVOK = 4.1
+
+# Физические способности
+
+# ___Rivok___
+S_KD_RIVOK = 180
+
+
+class Rivok(arcade.Sprite):
+    def __init__(self, pers):
+        super().__init__()
+        self.tip = {FIZ_SPOSOB: RIVOK}
+
+        self.rivok_tex = (
+            arcade.load_texture_pair(':resources:images/animated_characters/male_person/malePerson_walk7.png'))
+
+        self.pers = pers
+        self.scale = pers.scale
+
+        self.s = 0
+        self.s_kd = S_KD_RIVOK
+        self.rivok = False
+        self.texture = self.rivok_tex[1]
+
+        self.radius_stop = hit_box_and_radius.KvadratRadius(self.scale)
+        self.stop1 = False
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.s_kd += 1
+        if self.s_kd < S_KD_RIVOK:
+            self.rivok = False
+
+        self.radius_stop.position = self.position
+        if not self.rivok:
+            self.position = self.pers.position
+
+        for drug in self.pers.v_drug_list:
+            if drug != self.pers:
+                if (self.radius_stop.check_collision(drug.kvadrat_radius) and
+                        abs(self.radius_stop.center_x - self.pers.igrok.center_x) >
+                        abs(drug.center_x - self.pers.igrok.center_x)):
+                    self.stop1 = True
+                    self.rivok = False
+                    self.change_x = 0
+
+        if (self.radius_stop.check_collision(sprite_list=self.pers.sprite_list)
+                or self.radius_stop.check_collision(self.pers.igrok)):
+            self.stop1 = True
+            self.rivok = False
+            self.change_x = 0
+
+        if self.stop1:
+            self.s_kd = 0
+            self.change_x = 0
+            self.rivok = False
+            self.s = 0
+
+        if self.pers.storona == 0 and self.rivok:
+            self.change_x = 50
+            self.stop1 = False
+        elif self.pers.storona == 1 and self.rivok:
+            self.change_x = -50
+            self.stop1 = False
+
+        if self.rivok:
+            self.s += 1
+        if self.s > 20:
+            self.s_kd = 0
+            self.change_x = 0
+            self.stop1 = True
+            self.rivok = False
+            self.s = 0
+
+        self.pers.rivok = self.rivok
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.texture = self.rivok_tex[self.pers.storona]
+
+    def return_positoin(self):
+        return self.position
+
+
+# Стихия молнии
+
+# ___SharMolniay___
 SKOROST_SHAR_MOLNII = 20
 URON_SHAR_MOL = 25
 URON1_SHAR_MOL = 5
@@ -27,11 +118,6 @@ PROMAH_DEBAF_URON = 1.5
 BAF_URON = 19.067
 
 
-# __Shcit__
-URON_SHCHIT = 40
-
-
-# Стихия молнии
 class Molniay(arcade.Sprite):
     def __init__(self, sprite_list, igrok):
         super().__init__()
@@ -617,7 +703,7 @@ class VeterOtalkivanie(arcade.Sprite):
 class Mech(arcade.Sprite):
     def __init__(self, pers, sprite_list, storona, v_ataki=(30, 10)):
         super().__init__()
-        self.tip = COLD_ORUZHIE
+        self.tip = {COLD_ORUZHIE: 0}
         
         self.uron = 50
 
@@ -681,10 +767,98 @@ class Mech(arcade.Sprite):
             self.texture = self.udar_tex1[0]
 
 
+class DvuruchMech(arcade.Sprite):
+    def __init__(self, pers, sprite_list, v_ataki=(60, 20)):
+        super().__init__()
+        self.tip = {COLD_ORUZHIE: DVURUCH_MECH}
+
+        self.uron = URON_DVURUCH_MECH
+
+        self.pers = pers
+        self.sprite_list = sprite_list
+
+        self.kd = v_ataki[0]
+        self.kd1 = v_ataki[1]
+        self.s = 0
+        self.s1 = self.kd1
+        self.s2 = 0
+
+        self.slovar = {}
+
+        self.udar_tex0 = arcade.load_texture_pair('nuzhno/udar.png')
+        self.udar_tex1 = arcade.load_texture_pair('nuzhno/udar1.png')
+        self.texture = self.udar_tex0[1]
+        self.scale = 2
+
+        self.udar = False
+        self.s_udar = 0
+
+        self.probit_block = False
+        self.kombo = False
+        for i in self.pers.tip_slovar:
+            if i == 4 and self.pers.tip_slovar[i] == 4.1:
+                self.kombo = True
+
+    def on_update(self, delta_time: float = 1 / 60):
+        if self.probit_block:
+            self.s2 += 1
+        if self.s2 > 15:
+            self.s2 = 0
+            self.probit_block = False
+
+        if self.s == 0:
+            for sprite in self.sprite_list:
+                self.slovar.update({sprite: False})
+            self.s += 1
+        if self.s1 <= self.kd or self.pers.minus_hp:
+            self.udar = False
+        if self.udar:
+            self.s_udar += 1
+        if self.s_udar > self.kd1:
+            self.s_udar = 0
+            self.udar = False
+            self.s1 = 0
+
+        if self.kombo and self.pers.rivok:
+            self.probit_block = True
+            self.s2 = 0
+
+        if self.udar:
+            for sprite in self.sprite_list:
+                if arcade.check_for_collision(self, sprite) and not sprite.block1 and not self.probit_block:
+                    for i in self.slovar:
+                        if i == sprite and not self.slovar[i]:
+                            if not block_func(sprite, self.pers):
+                                self.slovar[i] = True
+                                sprite.hp -= self.uron
+                elif arcade.check_for_collision(self, sprite) and self.probit_block:
+                    for i in self.slovar:
+                        if i == sprite and not self.slovar[i]:
+                            self.slovar[i] = True
+                            sprite.hp -= self.uron
+
+        if self.pers.storona == 0:
+            self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
+        elif self.pers.storona == 1:
+            self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
+
+        if not self.udar:
+            for i in self.slovar:
+                self.slovar[i] = False
+
+        self.s1 += 1
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        if self.pers.storona == 0:
+            self.texture = self.udar_tex0[0]
+        else:
+            self.texture = self.udar_tex1[0]
+
+
 class Shchit(arcade.Sprite):
     def __init__(self, pers, sprite_list):
         super().__init__()
-        self.tip = ZASHCHITA
+        self.tip = {ZASHCHITA: 0}
         
         self.uron = URON_SHCHIT
         

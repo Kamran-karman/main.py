@@ -101,19 +101,19 @@ class Igra1GlavaViev(arcade.View):
         self.igrok = pers.Voyslav(self.vrag_list)
         self.igrok.position = IGROK_POSITION
         for x in range(200, 600, 100):
-            vrag = pers.Vrag(self.igrok, self.sprite_list, self.zhivie_vrag_list)
+            vrag = pers.Vrag(self.igrok, self.walls_list, self.zhivie_vrag_list)
             vrag._position = x, 200
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
         for x in range(-600, -200, 100):
-            vrag = pers.Vrag(self.igrok, self.sprite_list, self.zhivie_vrag_list)
+            vrag = pers.Vrag(self.igrok, self.walls_list, self.zhivie_vrag_list)
             vrag._position = x, 200
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
         for x in range(700, 1000, 150):
-            voin_in = pers.Voin_Innocentii(self.igrok, self.sprite_list, self.v_drug_list)
+            voin_in = pers.Voin_Innocentii(self.igrok, self.walls_list, self.v_drug_list)
             voin_in.position = x, 200
             self.zhivie_vrag_list.append(voin_in)
             self.vrag_list.append(voin_in)
@@ -184,6 +184,9 @@ class Igra1GlavaViev(arcade.View):
 
                 if y == 0 and self.s >= 2:
                     self.s = 0
+
+                if vrag.return_position:
+                    self.fizika.set_position(vrag, vrag.return_position_func())
 
         if self.pravo and not self.levo:
             force = (IGROK_MOVE_GROUND, 0)

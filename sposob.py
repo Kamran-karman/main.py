@@ -101,6 +101,63 @@ class Rivok(arcade.Sprite):
         return self.position
 
 
+class Udar(arcade.Sprite):
+    def __init__(self, pers, sprite_list, uron, timer1=30, timer2=10):
+        super().__init__()
+        self.pers = pers
+        self.sprite_list = sprite_list
+        self.uron = uron
+        self.timer1 = timer1
+        self.timer2 = timer2
+
+        self.udar_texture = self.pers.udar_texture
+#        self.texture = self.udar_texture[self.pers.storona]
+        self.scale = self.pers.scale
+
+        self.udar = False
+        self.s = 0
+        self.s1 = self.timer2
+
+        self.slovar = {}
+        self.s_slovar = 0
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.position = self.pers.position
+
+        if len(self.sprite_list) != len(self.slovar):
+            self.s_slovar = 0
+
+        if self.s_slovar == 0:
+            self.s_slovar += 1
+            for sprite in self.sprite_list:
+                self.slovar.update({sprite: False})
+
+        self.s1 += 1
+
+        if self.s1 <= self.timer2:
+            self.udar = False
+
+        if self.udar:
+            self.s += 1
+            if self.s > self.timer1:
+                self.udar = False
+                self.s1 = 0
+                self.s = 0
+
+            for sprite in self.sprite_list:
+                if arcade.check_for_collision(self, sprite):
+                    for i in self.slovar:
+                        if i == sprite:
+                            sprite.hp -= self.uron
+                            self.slovar[i] = True
+        else:
+            for i in self.slovar:
+                self.slovar[i] = False
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.texture = self.udar_texture[self.pers.storona]
+
+
 # Стихия молнии
 
 # ___SharMolniay___
@@ -859,9 +916,9 @@ class Shchit(arcade.Sprite):
     def __init__(self, pers, sprite_list):
         super().__init__()
         self.tip = {ZASHCHITA: 0}
-        
+
         self.uron = URON_SHCHIT
-        
+
         self.pers = pers
         self.sprite_list = sprite_list
         self.scale = 0.5
@@ -873,15 +930,16 @@ class Shchit(arcade.Sprite):
         self.block1 = False
         self.sila = False
         self.udar = False
+        self.s = 0
+        self.s1 = 15
 
         self.slovar = {}
 
         self.s = 0
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        if self.pers.udar:
-            self.udar = True
-        else:
+        self.s1 += 1
+        if self.s1 <= 15:
             self.udar = False
 
         self.center_y = self.pers.center_y
@@ -906,7 +964,13 @@ class Shchit(arcade.Sprite):
             self.slovar.clear()
             self.s = 0
 
+        if self.s > 10:
+            self.udar = False
+            self.s1 = 0
+            self.s = 0
+
         if self.udar:
+            self.s += 1
             self.block = self.block1 = False
             for sprite in self.sprite_list:
                 if arcade.check_for_collision(sprite, self):
@@ -921,19 +985,19 @@ class Shchit(arcade.Sprite):
             for i in self.slovar:
                 self.slovar[i] = False
 
-        if self.block1:
-            self.pers.block1 = True
+        if self.pers.block1:
+            self.block1 = True
         else:
-            self.pers.block1 = False
+            self.block1 = False
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         if self.udar:
             self.block = self.block1 = False
             self.texture = self.tex_udar[self.pers.storona]
+            return
 
         if self.block or self.block1:
             self.texture = self.tex_shcit[self.pers.storona]
-
 
 
 # Стихия земли

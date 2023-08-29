@@ -118,6 +118,11 @@ class Igra1GlavaViev(arcade.View):
             self.zhivie_vrag_list.append(voin_in)
             self.vrag_list.append(voin_in)
 
+        gromila = pers.Gromila(self.igrok, self.walls_list, self.v_drug_list)
+        gromila.position = -750, 300
+        self.zhivie_vrag_list.append(gromila)
+        self.vrag_list.append(gromila)
+
         for vrag in self.zhivie_vrag_list:
             vrag.v_drug_list = self.zhivie_vrag_list
 
@@ -206,15 +211,15 @@ class Igra1GlavaViev(arcade.View):
 
         self.fizika.step()
 
-    def on_key_press(self, symbol: int, modifiers: int):
+       def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.RCTRL:
             self.igrok.shar_mol.zaryad = True
 
         if symbol == arcade.key.RSHIFT:
-            self.igrok.shcit.block1 = True
+            self.igrok.block1 = True
 
         if symbol == arcade.key.SPACE:
-            self.igrok.udar = True
+            self.igrok.shchit.udar = True
 
         if symbol == arcade.key.NUM_2:
             self.igrok.streliPeruna.udar = True
@@ -225,14 +230,6 @@ class Igra1GlavaViev(arcade.View):
 
         if symbol == arcade.key.NUM_1:
             self.igrok.gnev_Tora.udar = True
-
-        if symbol == arcade.key.D or symbol == arcade.key.RIGHT:
-            self.pravo = True
-        elif symbol == arcade.key.A or symbol == arcade.key.LEFT:
-            self.levo = True
-
-        if symbol == arcade.key.NUM_0:
-            self.igrok.molniya_atak = True
 
         if symbol == arcade.key.D or symbol == arcade.key.RIGHT:
             self.pravo = True
@@ -250,7 +247,7 @@ class Igra1GlavaViev(arcade.View):
             self.igrok.shar_mol.zaryad = False
 
         if _symbol == arcade.key.RSHIFT:
-            self.igrok.shcit.block1 = False
+            self.igrok.block1 = False
 
         if _symbol == arcade.key.D or _symbol == arcade.key.RIGHT:
             self.pravo = False

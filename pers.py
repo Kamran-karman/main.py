@@ -37,18 +37,23 @@ class Pers(arcade.Sprite):
         self.block1 = False
         self.block = False
         self.s_block = 0
+        self.timer_for_s_block = 30
         self.zashcita = False
         self.pariv = False
-
-        self.udar = False
-        self.s_udar = 0
-        self.s1_udar = 0
-
-        self.uron = 0
 
         self.storona = 1
 
         self.sch_walk_tex = 0
+
+        self.idle_texture = None
+        self.jump_texture = None
+        self.fall_texture = None
+        self.udar_texture = None
+        self.block_texture = None
+        self.smert_texture = None
+
+        self.uron = 0
+        self.udar = sposob.Udar(self, self.sprite_list, self.uron)
 
         self.walk_t = []
 
@@ -64,6 +69,8 @@ class Pers(arcade.Sprite):
 
         self.return_position = True
         self.rivok = False
+
+        self.tipo_return = False
 
     def update_hp(self):
         if self.hp >= self.h:
@@ -94,36 +101,52 @@ class Pers(arcade.Sprite):
 
         self.x_odometr += dx
 
-    def udar_and_block(self, zashchita=None, cold_oruzhie=None):
-        if self.s_udar < 10:
-            self.udar = False
-            self.s_udar += 1
+    def block_func(self, zashchita=None):
+        for tip in self.tip_slovar:
+            if tip == 0:
+                if self.s_block >= 30:
+                    self.s_block = 0
+                    zashchita.block = False
+                    self.block = False
 
-        if self.s1_udar >= 10:
-            self.s1_udar = 0
-            self.s_udar = 0
-            self.s_udar = False
+                if self.block:
+                    zashchita.block = True
+                    self.s_block += 1
+            else:
+                if self.s_block >= self.timer_for_s_block:
+                    self.s_block = 0
+                    self.block = False
 
-        if self.udar and self.s_udar >= 10:
-            self.s1_udar += 1
+                if self.block:
+                    self.s_block += 1
+                    self.texture = self.block_texture[self.storona]
+                    self.tipo_return = True
+            break
 
-        if not self.zashcita:
-            if self.s_block >= 30:
-                self.s_block = 0
-                self.block = False
+    def udar_func(self):
+        self.udar.udar_texture = self.udar_texture
+        self.udar.on_update()
+        if len(self.oruzh_list) == 0:
+            if self.udar.udar:
+                self.tipo_return = True
+        # elif len(self.oruzh_list) > 0:
+        #     for oruzh in self.oruzh_list:
+        #         if self.udar.udar:
+        #             oruzh.udar = True
 
-            if self.block:
-                self.s_block += 1
-                return
-        else:
-            if self.s_block >= 30:
-                self.s_block = 0
-                zashchita.block = False
-                self.block = False
+    def idle_animation(self, dx):
+        if abs(dx) < D_ZONE:
+            self.texture = self.idle_texture[self.storona]
+            self.tipo_return = True
 
-            if self.block:
-                zashchita.block = True
-                self.s_block += 1
+    def jump_animation(self, dy):
+        if not self.is_on_ground:
+            if dy > D_ZONE:
+                self.texture = self.jump_texture[self.storona]
+                self.tipo_return = True
+            elif dy < -D_ZONE:
+                self.texture = self.fall_texture[self.storona]
+                self.tipo_return = True
 
     def walk_animation(self):
         if abs(self.x_odometr) > 15:
@@ -152,20 +175,20 @@ class Voyslav(Pers):
 
         main_patch = (":resources:images/animated_characters/male_adventurer/maleAdventurer")
 
-        self.idle_tex = arcade.load_texture_pair(f"{main_patch}_idle.png")
-        self.jump_tex = arcade.load_texture_pair(f"{main_patch}_jump.png")
-        self.fall_tex = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.udar_tex = arcade.load_texture_pair(f'nuzhno/udar2.png')
+        self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
+        self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
+        self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/udar2.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
             self.walk_t.append(tex)
-        self.texture = self.idle_tex[0]
+        self.texture = self.idle_texture[0]
 
-        self.shcit = sposob.Shchit(self, self.sprite_list)
-        self.tip_slovar.update(self.shcit.tip)
+        self.shchit = sposob.Shchit(self, self.sprite_list)
+        self.tip_slovar.update(self.shchit.tip)
 
-        self.oruzh_list = arcade.SpriteList()
+        self.oruzh_list.append(self.shchit)
 
         self.molniya = sposob.Molniay(self.sprite_list, self)
         self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
@@ -177,46 +200,43 @@ class Voyslav(Pers):
                 self.zashcita = True
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.tipo_return = False
         self.update_storona(dx, physics_engine)
 
-        self.udar_and_block(self.shcit, self.oruzh_list)
-
-        if self.block and not self.zashcita:
-            self.texture = self.fall_tex[self.storona]
-
-        if self.udar and self.s_udar >= 10:
-            self.texture = self.udar_tex[self.storona]
+        self.block_func(self.shchit)
+        if self.tipo_return:
+            return
+        self.udar_func()
+        if self.tipo_return:
             return
 
-        if not self.is_on_ground:
-            if dy > D_ZONE:
-                self.texture = self.jump_tex[self.storona]
-                return
-            elif dy < -D_ZONE:
-                self.texture = self.fall_tex[self.storona]
-                return
+        self.jump_animation(dy)
+        if self.tipo_return:
+            return
 
-        if abs(dx) < D_ZONE:
-            self.texture = self.idle_tex[self.storona]
+        self.idle_animation(dx)
+        if self.tipo_return:
             return
 
         self.walk_animation()
+        if self.tipo_return:
+            return
 
     def on_update(self, delta_time: float = 1 / 60):
         self.update_hp()
         self.kvadrat_radius.position = self.position
 
-        self.shcit.on_update()
+        self.shchit.on_update()
 
         self.gnev_Tora.on_update()
         self.shar_mol.on_update()
         self.shar_mol.update()
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.block or self.block1 or self.udar:
-            self.shcit.draw()
+        if self.block or self.block1 or self.shchit.udar:
+            self.shchit.draw()
 
-        self.shcit.update_animation()
+        self.shchit.update_animation()
 
         if (self.shar_mol.udar and self.shar_mol.zaryad_b) or self.shar_mol.zaryad:
             self.shar_mol.draw()
@@ -413,6 +433,8 @@ class Vrag(Pers):
 
         self.kast_scena = kast_scena
 
+        self.udar.sprite_list = self.igrok_list
+
     def ii(self, dx, physics_engine):
         self.radius_vid.position = self.radius_ataki.position = self.kvadrat_radius.position = self.position
         if not self.smert:
@@ -476,6 +498,20 @@ class Vrag(Pers):
                 self.go = False
                 self.force_x, self.force_y = 0., 0.
 
+    def update_udar(self):
+        if len(self.oruzh_list) == 0:
+            if self.radius_ataki.check_collision(self.igrok):
+                self.udar.udar = True
+            else:
+                self.udar.udar = False
+        elif len(self.oruzh_list) > 0:
+            for oruzh in self.oruzh_list:
+                if self.radius_ataki.check_collision(self.igrok):
+                    oruzh.udar = True
+                else:
+                    oruzh.udar = False
+                oruzh.on_update()
+
     def return_force(self, xy: str):
         if not self.is_on_ground:
             self.force_y = 0
@@ -495,47 +531,44 @@ class BetaBalvanchik(Vrag):
         self.scale = 1.2
 
         main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
-        self.idle = arcade.load_texture_pair(f"{main_patch}_idle.png")
-        self.jump_tex = arcade.load_texture_pair(f"{main_patch}_jump.png")
-        self.fall_tex = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.smert_tex = arcade.load_texture_pair('nuzhno/smert.png')
+        self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
+        self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
+        self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
+        self.smert_texture = arcade.load_texture_pair('nuzhno/smert.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar2.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
             self.walk_t.append(tex)
-        self.texture = self.idle[0]
+        self.texture = self.idle_texture[0]
 
         self.mech = sposob.Mech(self, self.igrok_list, (60, 20))
         self.oruzh_list.append(self.mech)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.tipo_return = False
+
         if not self.smert:
             self.ii(dx, physics_engine)
 
-            self.udar_and_block(None, self.oruzh_list)
-
-            if not self.is_on_ground:
-                if dy > D_ZONE:
-                    self.texture = self.jump_tex[self.storona]
-                    return
-                elif dy < -D_ZONE:
-                    self.texture = self.fall_tex[self.storona]
-                    return
-
-            if abs(dx) < D_ZONE:
-                self.texture = self.idle[self.storona]
+            self.block_func()
+            if self.tipo_return:
+                return
+            self.udar_func()
+            if self.tipo_return:
                 return
 
+            self.jump_animation(dy)
+            if self.tipo_return:
+                return
+            self.idle_animation(dx)
+            if self.tipo_return:
+                return
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60):
         self.update_hp()
-
-        if self.radius_ataki.check_collision(self.igrok):
-            self.mech.udar = True
-        else:
-            self.mech.udar = False
-        self.mech.on_update()
+        self.update_udar()
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None):
         if self.mech.udar:
@@ -565,15 +598,16 @@ class VoinInnocentii(Vrag):
         self.scale = 1.1
 
         main_patch = ':resources:images/animated_characters/male_person/malePerson'
-        self.idle_tex = arcade.load_texture_pair(f'{main_patch}_idle.png')
-        self.jump_tex = arcade.load_texture_pair(f'{main_patch}_jump.png')
-        self.fall_tex = arcade.load_texture_pair(f'{main_patch}_fall.png')
+        self.idle_texture = arcade.load_texture_pair(f'{main_patch}_idle.png')
+        self.jump_texture = arcade.load_texture_pair(f'{main_patch}_jump.png')
+        self.fall_texture = arcade.load_texture_pair(f'{main_patch}_fall.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar2.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
             self.walk_t.append(tex)
 
-        self.texture = self.idle_tex[self.storona]
+        self.texture = self.idle_texture[self.storona]
 
         self.rivok_sposob = sposob.Rivok(self)
         self.tip_slovar.update(self.rivok_sposob.tip)
@@ -585,36 +619,35 @@ class VoinInnocentii(Vrag):
         self.tip_slovar.update(self.dvuruch_mech.tip)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.tipo_return = False
+
         if not self.smert:
             self.ii(dx, physics_engine)
 
-            self.udar_and_block(None, self.oruzh_list)
-
-            self.rivok_func()
-
-            if not self.is_on_ground:
-                if dy > D_ZONE:
-                    self.texture = self.jump_tex[self.storona]
-                    return
-                elif dy < -D_ZONE:
-                    self.texture = self.fall_tex[self.storona]
-                    return
-
-            if abs(dx) < D_ZONE:
-                self.texture = self.idle_tex[self.storona]
+            self.block_func()
+            if self.tipo_return:
+                return
+            self.udar_func()
+            if self.tipo_return:
                 return
 
+            self.rivok_func()
+            if self.tipo_return:
+                return
+
+            self.jump_animation(dy)
+            if self.tipo_return:
+                return
+            self.idle_animation(dx)
+            if self.tipo_return:
+                return
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_hp()
         self.rivok_sposob.update()
         self.rivok_sposob.on_update()
-        if self.radius_ataki.check_collision(self.igrok):
-            self.dvuruch_mech.udar = True
-        else:
-            self.dvuruch_mech.udar = False
-        self.dvuruch_mech.on_update()
+        self.update_udar()
 
         if self.rivok_sposob.stop1:
             self.rivok_sposob.stop1 = False
@@ -655,12 +688,50 @@ class Gromila(Vrag):
         self.scale = 2
 
         main_patch = ':resources:images/animated_characters/male_person/malePerson'
-        self.idle_tex = arcade.load_texture_pair(f'{main_patch}_idle.png')
-        self.jump_tex = arcade.load_texture_pair(f'{main_patch}_jump.png')
-        self.fall_tex = arcade.load_texture_pair(f'{main_patch}_fall.png')
+        self.idle_texture = arcade.load_texture_pair(f'{main_patch}_idle.png')
+        self.jump_texture = arcade.load_texture_pair(f'{main_patch}_jump.png')
+        self.fall_texture = arcade.load_texture_pair(f'{main_patch}_fall.png')
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/gronila_udar.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
             self.walk_t.append(tex)
 
-        self.texture = self.idle_tex[self.storona]
+        self.texture = self.idle_texture[self.storona]
+
+        self.pers = 'gromila'
+
+        self.udar.scale = self.scale
+
+    def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.tipo_return = False
+
+        if not self.smert:
+            self.ii(dx, physics_engine)
+
+            self.block_func()
+            if self.tipo_return:
+                return
+            self.udar_func()
+            if self.tipo_return:
+                return
+
+            self.jump_animation(dy)
+            if self.tipo_return:
+                return
+            self.idle_animation(dx)
+            if self.tipo_return:
+                return
+            self.walk_animation()
+            if self.tipo_return:
+                return
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.update_hp()
+
+        self.update_udar()
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        if self.udar.udar:
+            self.udar.draw()
+        self.udar.update_animation()

@@ -113,7 +113,7 @@ class Igra1GlavaViev(arcade.View):
             self.vrag_list.append(vrag)
 
         for x in range(700, 1000, 150):
-            voin_in = pers.Voin_Innocentii(self.igrok, self.walls_list, self.v_drug_list)
+            voin_in = pers.VoinInnocentii(self.igrok, self.walls_list, self.v_drug_list)
             voin_in.position = x, 200
             self.zhivie_vrag_list.append(voin_in)
             self.vrag_list.append(voin_in)

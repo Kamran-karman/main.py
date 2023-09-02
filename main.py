@@ -204,7 +204,7 @@ class Igra1GlavaViev(arcade.View):
         else:
             self.fizika.set_friction(self.igrok, 1)
 
-        if self.igrok.molniya.udar and self.s1 == 0 and self.igrok.molniya.s_kd >= 300 and self.igrok.molniya.s >= 3:
+        if self.igrok.molniya.action and self.s1 == 0 and self.igrok.molniya.s >= self.igrok.molniya.timer_for_s:
             self.s1 += 1
             poz = self.igrok.molniya.koordinati()
             self.fizika.set_position(self.igrok, poz)
@@ -222,14 +222,14 @@ class Igra1GlavaViev(arcade.View):
             self.igrok.shchit.udar = True
 
         if symbol == arcade.key.NUM_2:
-            self.igrok.streliPeruna.udar = True
+            self.igrok.streliPeruna.action = True
 
         if symbol == arcade.key.NUM_0:
-            self.igrok.molniya.udar = True
+            self.igrok.molniya.action = True
             self.s1 = 0
 
         if symbol == arcade.key.NUM_1:
-            self.igrok.gnev_Tora.udar = True
+            self.igrok.gnev_Tora.action = True
 
         if symbol == arcade.key.D or symbol == arcade.key.RIGHT:
             self.pravo = True
@@ -243,7 +243,7 @@ class Igra1GlavaViev(arcade.View):
 
     def on_key_release(self, _symbol: int, _modifiers: int):
         if _symbol == arcade.key.RCTRL:
-            self.igrok.shar_mol.udar = True
+            self.igrok.shar_mol.action = True
             self.igrok.shar_mol.zaryad = False
 
         if _symbol == arcade.key.RSHIFT:

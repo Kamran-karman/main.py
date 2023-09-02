@@ -190,7 +190,7 @@ class Voyslav(Pers):
 
         self.oruzh_list.append(self.shchit)
 
-        self.molniya = sposob.Molniay(self, self.sprite_list)
+        self.molniya = sposob.CepnayaMolniay(self, self.sprite_list)
         self.gnev_Tora = sposob.GnevTora(self, self.sprite_list)
         self.streliPeruna = sposob.StreliPeruna(self, self.sprite_list)
         self.shar_mol = sposob.SharMolniay(self, self.sprite_list)
@@ -301,7 +301,7 @@ class BetaMaster(arcade.Sprite):
         self.mech = sposob.Mech(self, self.sprite_list, (10, 5))
         self.oruzh_list.append(self.mech)
 
-        self.molniya = sposob.Molniay(self.sprite_list, self)
+        self.molniya = sposob.CepnayaMolniay(self.sprite_list, self)
         self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
         self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
         self.veter_otalk = sposob.VeterOtalkivanie(self, self.sprite_list)
@@ -613,7 +613,7 @@ class VoinInnocentii(Vrag):
 
         self.texture = self.idle_texture[self.storona]
 
-        self.rivok_sposob = sposob.Rivok(self)
+        self.rivok_sposob = sposob.Rivok(self, self.sprite_list)
         self.tip_slovar.update(self.rivok_sposob.tip)
 
         self.pers = 'voin_innocentii'

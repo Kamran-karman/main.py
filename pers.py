@@ -127,7 +127,7 @@ class Pers(arcade.Sprite):
         self.udar.udar_texture = self.udar_texture
         self.udar.on_update()
         if len(self.oruzh_list) == 0:
-            if self.udar.udar:
+            if self.udar.action:
                 self.tipo_return = True
         # elif len(self.oruzh_list) > 0:
         #     for oruzh in self.oruzh_list:
@@ -190,9 +190,9 @@ class Voyslav(Pers):
 
         self.oruzh_list.append(self.shchit)
 
-        self.molniya = sposob.Molniay(self.sprite_list, self)
-        self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
-        self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
+        self.molniya = sposob.Molniay(self, self.sprite_list)
+        self.gnev_Tora = sposob.GnevTora(self, self.sprite_list)
+        self.streliPeruna = sposob.StreliPeruna(self, self.sprite_list)
         self.shar_mol = sposob.SharMolniay(self, self.sprite_list)
 
         for i in self.tip_slovar:
@@ -305,6 +305,7 @@ class BetaMaster(arcade.Sprite):
         self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
         self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
         self.veter_otalk = sposob.VeterOtalkivanie(self, self.sprite_list)
+        self.kulak_gaia = sposob.KulakGaia(self, self.sprite_list)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         if dx < -D_ZONE and self.storona == 0:
@@ -395,6 +396,7 @@ class BetaMaster(arcade.Sprite):
         self.veter_otalk.on_update()
         self.veter_otalk.update()
         self.gnev_Tora.on_update()
+        self.kulak_gaia.on_update()
 
     def update_animation(self, delta_time: float = 1 / 60):
         if self.mech.udar:
@@ -411,6 +413,8 @@ class BetaMaster(arcade.Sprite):
             pass
             #self.veter_otalk.draw()
         self.veter_otalk.update_animation()
+        self.kulak_gaia.draw()
+        self.kulak_gaia.update_animation()
 
 
 class Vrag(Pers):
@@ -501,9 +505,9 @@ class Vrag(Pers):
     def update_udar(self):
         if len(self.oruzh_list) == 0:
             if self.radius_ataki.check_collision(self.igrok):
-                self.udar.udar = True
+                self.udar.action = True
             else:
-                self.udar.udar = False
+                self.udar.action = False
         elif len(self.oruzh_list) > 0:
             for oruzh in self.oruzh_list:
                 if self.radius_ataki.check_collision(self.igrok):
@@ -656,7 +660,7 @@ class VoinInnocentii(Vrag):
             self.return_position = False
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        if not self.rivok_sposob.stop1 and self.rivok_sposob.rivok and self.rivok_sposob.s_kd >= 180:
+        if not self.rivok_sposob.stop1 and self.rivok_sposob.action and self.rivok_sposob.s_kd >= 180:
             self.rivok_sposob.draw()
         self.rivok_sposob.update_animation()
 
@@ -668,10 +672,10 @@ class VoinInnocentii(Vrag):
         if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
             if self.igrok.center_x > self.radius_vid.center_x:
                 if 150 < abs(self.igrok.left - self.right) <= self.rivok_distanc and not self.stop1:
-                    self.rivok_sposob.rivok = True
+                    self.rivok_sposob.action = True
             elif self.igrok.center_x < self.radius_vid.center_x:
                 if 150 < abs(self.igrok.right - self.left) <= self.rivok_distanc and not self.stop1:
-                    self.rivok_sposob.rivok = True
+                    self.rivok_sposob.action = True
 
     def return_position_func(self):
         return self.rivok_sposob.return_positoin()
@@ -700,8 +704,6 @@ class Gromila(Vrag):
         self.texture = self.idle_texture[self.storona]
 
         self.pers = 'gromila'
-
-        self.udar.scale = self.scale
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
@@ -732,6 +734,6 @@ class Gromila(Vrag):
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        if self.udar.udar:
+        if self.udar.action:
             self.udar.draw()
         self.udar.update_animation()

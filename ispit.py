@@ -190,6 +190,11 @@ class Igra1GlavaViev(arcade.View):
                 if self.s > 2 and not vrag.is_on_ground:
                     y = 0
 
+                if self.igrok.veter_otalk.udar:
+                    x -= self.igrok.veter_otalk.return_force(2, 'x')
+                    #y -= self.igrok.veter_otalk.return_force(2, 'y')
+                    print(x, y)
+
                 if abs(x) > 0:
                     self.fizika.apply_force(vrag, (x, y))
                     self.fizika.set_friction(vrag, 0.1)
@@ -213,7 +218,7 @@ class Igra1GlavaViev(arcade.View):
             else:
                 self.fizika.set_friction(self.igrok, 1)
 
-                if self.igrok.molniya.action and self.s1 == 0 and self.igrok.molniya.s >= self.igrok.molniya.timer_for_s:
+        if self.igrok.molniya.action and self.s1 == 0 and self.igrok.molniya.s >= self.igrok.molniya.timer_for_s:
             self.s1 += 1
             poz = self.igrok.molniya.return_position()
             self.fizika.set_position(self.igrok, poz)

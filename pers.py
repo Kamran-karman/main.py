@@ -34,11 +34,7 @@ class Pers(arcade.Sprite):
         self.minus_hp = False
 
         self.reakciya = 0
-        self.block1 = False
-        self.block = False
-        self.s_block = 0
-        self.timer_for_s_block = 30
-        self.zashcita = False
+        self.block = sposob.Block(self, self.sprite_list)
         self.pariv = False
 
         self.storona = 1
@@ -101,27 +97,17 @@ class Pers(arcade.Sprite):
 
         self.x_odometr += dx
 
-    def block_func(self, zashchita=None):
+    def block_func(self):
+        block = False
+        self.block.update_block()
         for tip in self.tip_slovar:
-            if tip == 0:
-                if self.s_block >= 30:
-                    self.s_block = 0
-                    zashchita.block = False
-                    self.block = False
-
-                if self.block:
-                    zashchita.block = True
-                    self.s_block += 1
+            if tip != 0:
+                block = True
             else:
-                if self.s_block >= self.timer_for_s_block:
-                    self.s_block = 0
-                    self.block = False
-
-                if self.block:
-                    self.s_block += 1
-                    self.texture = self.block_texture[self.storona]
-                    self.tipo_return = True
-            break
+                block = False
+                break
+        if self.block.block or self.block.avto_block and block:
+            self.texture = self.block_texture[self.storona]
 
     def udar_func(self):
         self.udar.udar_texture = self.udar_texture
@@ -129,10 +115,6 @@ class Pers(arcade.Sprite):
         if len(self.oruzh_list) == 0:
             if self.udar.action:
                 self.tipo_return = True
-        # elif len(self.oruzh_list) > 0:
-        #     for oruzh in self.oruzh_list:
-        #         if self.udar.udar:
-        #             oruzh.udar = True
 
     def idle_animation(self, dx):
         if abs(dx) < D_ZONE:
@@ -165,11 +147,9 @@ class Voyslav(Pers):
         super().__init__(sprite_list)
         self.pers = 'igrok'
 
-        self.hp = 1000
+        self.hp = 100000
 
         self.reakciya = 990
-
-        self.s_udar = 10
 
         self.scale = 1
 
@@ -185,7 +165,7 @@ class Voyslav(Pers):
             self.walk_t.append(tex)
         self.texture = self.idle_texture[0]
 
-        self.shchit = sposob.Shchit(self, self.sprite_list)
+        self.shchit = sposob.Shchit(self, self.sprite_list, 15, 5)
         self.tip_slovar.update(self.shchit.tip)
 
         self.oruzh_list.append(self.shchit)
@@ -194,10 +174,6 @@ class Voyslav(Pers):
         self.gnev_Tora = sposob.GnevTora(self, self.sprite_list)
         self.streliPeruna = sposob.StreliPeruna(self, self.sprite_list)
         self.shar_mol = sposob.SharMolniay(self, self.sprite_list)
-
-        for i in self.tip_slovar:
-            if i == 0:
-                self.zashcita = True
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
@@ -246,152 +222,71 @@ class Voyslav(Pers):
         self.streliPeruna.update_animation()
 
 
-class BetaMaster(arcade.Sprite):
+class BetaMaster(Pers):
     def __init__(self, sprite_list):
-        super().__init__()
-        self.sprite_list = sprite_list
-
+        super().__init__(sprite_list)
         self.hp = 10000
-        self.h = self.hp
-        self.smert = False
-        self.minus_hp = False
 
         self.reakciay = 1000
 
-        self.block1 = False
-        self.block = False
-        self.s_block = 0
-
-        self.udar = False
-        self.s_udar = 10
-        self.s1_udar = 0
-
-        self.center_x = KOOR_X
-        self.center_y = KOOR_Y
+        self.center_x = 0
+        self.center_y = 3000
         self.scale = 1
-        self.storona = 1
-
-        self.sch_walk_tex = 0
 
         main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
 
-        self.idle_tex = arcade.load_texture_pair(f"{main_patch}_idle.png")
-        self.jump_tex = arcade.load_texture_pair(f"{main_patch}_jump.png")
-        self.fall_tex = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.udar_tex = arcade.load_texture_pair(f'nuzhno/udar2.png')
+        self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
+        self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
+        self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/udar2.png')
 
-        self.walk_t = []
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
             self.walk_t.append(tex)
-        self.texture = self.idle_tex[0]
+        self.texture = self.idle_texture[0]
 
-        self.is_on_ground = True
-        self.x_odometr = 0
+        self.shchit = sposob.Shchit(self, self.sprite_list, 10, 10)
+        self.oruzh_list.append(self.shchit)
+        self.tip_slovar.update(self.shchit.tip)
 
-        self.rad = hit_box_and_radius.KvadratRadius(self.scale)
-
-        self.zashcita = False
-
-        self.shcit = sposob.Shchit(self, self.sprite_list)
-        if self.shcit.tip == 0:
-            self.zashcita = True
-
-        self.oruzh_list = arcade.SpriteList()
-        self.mech = sposob.Mech(self, self.sprite_list, (10, 5))
+        self.mech = sposob.Mech(self, self.sprite_list, 10, 5)
         self.oruzh_list.append(self.mech)
+        self.tip_slovar.update(self.mech.tip)
 
-        self.molniya = sposob.CepnayaMolniay(self.sprite_list, self)
-        self.gnev_Tora = sposob.GnevTora(self.sprite_list, self)
-        self.streliPeruna = sposob.StreliPeruna(self.sprite_list, self)
+        self.molniya = sposob.CepnayaMolniay(self, self.sprite_list)
+        self.gnev_Tora = sposob.GnevTora(self, self.sprite_list)
+        self.streliPeruna = sposob.StreliPeruna(self, self.sprite_list)
         self.veter_otalk = sposob.VeterOtalkivanie(self, self.sprite_list)
         self.kulak_gaia = sposob.KulakGaia(self, self.sprite_list)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
-        if dx < -D_ZONE and self.storona == 0:
-            self.storona = 1
-        elif dx > D_ZONE and self.storona == 1:
-            self.storona = 0
+        self.tipo_return = False
+        self.update_storona(dx, physics_engine)
 
-        for sprite in self.sprite_list:
-            if self.rad.check_collision(sprite) and abs(dx) < D_ZONE:
-                if self.center_x > sprite.center_x:
-                    self.storona = 1
-                elif self.center_x < sprite.center_x:
-                    self.storona = 0
-
-        self.is_on_ground = physics_engine.is_on_ground(self)
-
-        self.x_odometr += dx
-
-        if not self.zashcita:
-            if self.s_block >= 30 or self.mech.udar:
-                self.s_block = 0
-                self.block = False
-
-            if self.block:
-                self.s_block += 1
-                self.texture = self.jump_tex[self.storona]
-                return
-        else:
-            if self.s_block >= 30 or self.mech.udar:
-                self.s_block = 0
-                self.shcit.block = False
-                self.block = False
-
-            if self.block:
-                self.shcit.block = True
-                self.s_block += 1
-
-        if self.s_udar < 10:
-            self.udar = False
-            self.s_udar += 1
-
-        if self.s1_udar >= 10:
-            self.s1_udar = 0
-            self.s_udar = 0
-            self.s_udar = False
-
-        if self.udar and self.s_udar >= 10:
-            self.s1_udar += 1
-            self.texture = self.udar_tex[self.storona]
+        self.block_func()
+        if self.tipo_return:
+            return
+        self.udar_func()
+        if self.tipo_return:
             return
 
-        if not self.is_on_ground:
-            if dy > D_ZONE:
-                self.texture = self.jump_tex[self.storona]
-                return
-            elif dy < -D_ZONE:
-                self.texture = self.fall_tex[self.storona]
-                return
-
-        if abs(dx) < D_ZONE:
-            self.texture = self.idle_tex[self.storona]
+        self.jump_animation(dy)
+        if self.tipo_return:
             return
-
-        if abs(self.x_odometr) > 15:
-            self.x_odometr = 0
-            self.sch_walk_tex += 1
-            if self.sch_walk_tex > 7:
-                self.sch_walk_tex = 0
-            self.texture = self.walk_t[self.sch_walk_tex][self.storona]
+        self.idle_animation(dx)
+        if self.tipo_return:
+            return
+        self.walk_animation()
+        if self.tipo_return:
+            return
 
     def on_update(self, delta_time: float = 1 / 60):
-        if self.hp >= self.h:
-            self.minus_hp = False
-        if self.hp < 0:
-            self.smert = True
-        elif self.hp < self.h:
-            self.h = self.hp
-            print('igrok:', self.hp)
-            self.minus_hp = True
-        elif self.hp > self.h:
-            self.h = self.hp
+        self.update_hp()
 
-        self.rad.position = self.position
+        self.kvadrat_radius.position = self.position
 
         self.mech.on_update()
-        self.shcit.on_update()
+        self.shchit.on_update()
 
         self.veter_otalk.on_update()
         self.veter_otalk.update()
@@ -399,11 +294,11 @@ class BetaMaster(arcade.Sprite):
         self.kulak_gaia.on_update()
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.mech.udar:
+        if self.mech.action:
             self.mech.draw()
-        if self.block or self.block1 or self.udar:
-            self.shcit.draw()
-        self.shcit.update_animation()
+        if self.block.block or self.block.avto_block or self.shchit.action:
+            self.shchit.draw()
+        self.shchit.update_animation()
         self.mech.update_animation()
 
         self.molniya.update_animation()
@@ -511,9 +406,9 @@ class Vrag(Pers):
         elif len(self.oruzh_list) > 0:
             for oruzh in self.oruzh_list:
                 if self.radius_ataki.check_collision(self.igrok):
-                    oruzh.udar = True
+                    oruzh.action = True
                 else:
-                    oruzh.udar = False
+                    oruzh.action = False
                 oruzh.on_update()
 
     def return_force(self, xy: str):
@@ -575,7 +470,7 @@ class BetaBalvanchik(Vrag):
         self.update_udar()
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None):
-        if self.mech.udar:
+        if self.mech.action:
             self.mech.draw()
 
     def update_animation(self, delta_time: float = 1 / 60):
@@ -664,7 +559,7 @@ class VoinInnocentii(Vrag):
             self.rivok_sposob.draw()
         self.rivok_sposob.update_animation()
 
-        if self.dvuruch_mech.udar:
+        if self.dvuruch_mech.action:
             self.dvuruch_mech.draw()
         self.dvuruch_mech.update_animation()
 

@@ -189,11 +189,9 @@ class Voyslav(Pers):
         self.jump_animation(dy)
         if self.tipo_return:
             return
-
         self.idle_animation(dx)
         if self.tipo_return:
             return
-
         self.walk_animation()
         if self.tipo_return:
             return

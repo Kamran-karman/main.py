@@ -60,6 +60,78 @@ class Sposob(arcade.Sprite):
         self.tip = {}
 
 
+class Block(Sposob):
+    def __init__(self, pers, sprite_list):
+        super().__init__(pers, sprite_list)
+        self.block = False
+        self.avto_block = False
+        self.s_avto_block = 0
+        self.timer_for_s_ab = 30
+
+        self.force = 0
+
+    def block_func(self, sprite1):
+        r = 10
+        for sprite in self.sprite_list:
+            if sprite == sprite1:
+                if sprite.block.block:
+                    return True
+
+                if self.pers.reakciya > sprite.reakciya:
+                    if sprite.reakciya * r <= self.pers.reakciya:
+                        return False
+                    else:
+                        r -= 0.1
+                        shanc = 1
+                        while r >= 0.1:
+                            if sprite.reakciya * (r - 0.1) < sprite.reakciya * r <= self.pers.reakciya:
+                                break
+                            r -= 0.1
+                            shanc += 1
+
+                        while shanc > 0:
+                            if random.randint(1, 200) == shanc:
+                                return False
+                            shanc -= 1
+
+                        sprite.block.avto_block = True
+                        return True
+                elif self.pers.reakciya < sprite.reakciya:
+                    if sprite.reakciya >= self.pers.reakciya * r:
+                        sprite.block.avto_block = True
+                        return True
+                    else:
+                        r -= 0.1
+                        shanc = 1
+                        while r >= 0.1:
+                            if self.pers.reakciya * (r - 0.1) < self.pers.reakciya * r <= sprite.reakciya:
+                                break
+                            r -= 0.1
+                            shanc += 1
+
+                        while shanc > 0:
+                            if random.randint(1, 200) == shanc:
+                                sprite.block.avto_block = True
+                                return True
+                            shanc -= 1
+
+                        return False
+                else:
+                    if random.randint(0, 1) == 1:
+                        sprite.block.avto_block = True
+                        return True
+                    else:
+                        return False
+
+    def update_block(self):
+        if self.avto_block:
+            self.s_avto_block += 1
+
+        if self.s_avto_block >= self.timer_for_s_ab:
+            self.avto_block = False
+            self.s_avto_block = 0
+
+
 class Mobilnost(Sposob):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
@@ -97,13 +169,15 @@ class Fight(Sposob):
 class ColdOruzhie(Fight):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list)
-        self.tip = {COLD_ORUZHIE: 0}
+        self.tip = {COLD_ORUZHIE: 0.0}
 
         self.timer_for_s = timer_for_s
         self.timer_for_s_kd = timer_for_s_kd
 
         self.udar_texture0 = None
         self.udar_texture1 = None
+
+        self.block = Block(pers, sprite_list)
 
     def kd_timer(self):
         self.s_kd += 1
@@ -113,10 +187,23 @@ class ColdOruzhie(Fight):
 
         if self.action:
             self.s += 1
-            if self.s > self.timer_for_s:
-                self.action = False
-                self.s_kd = 0
-                self.s = 0
+
+        if self.s > self.timer_for_s:
+            self.action = False
+            self.s_kd = 0
+            self.s = 0
+
+    def udar_and_block(self, sprite):
+        for i in self.slovar:
+            if not self.block.block_func(sprite) and i == sprite and not self.slovar[i]:
+                self.slovar[i] = True
+                sprite.hp -= self.uron
+
+    def update_storona(self):
+        if self.pers.storona == 0:
+            self.texture = self.udar_texture0[0]
+        else:
+            self.texture = self.udar_texture1[0]
 
 
 class FizSposobFight(Fight):
@@ -180,6 +267,56 @@ class Stihiya(Fight):
             self.s += 1
         if self.action and self.s == 1:
             self.s_kd = 0
+
+
+class Zashchita(Fight):
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
+        super().__init__(pers, sprite_list)
+        self.tip = {ZASHCHITA: 0.0}
+
+        self.timer_for_s = timer_for_s
+        self.timer_for_s_kd = timer_for_s_kd
+
+        self.udar_texture = None
+        self.block_texture = None
+
+        self.block = Block(pers, sprite_list)
+        self.sila = False
+
+    def udar_or_block_animation(self):
+        if self.action:
+            self.block.block = self.block.avto_block = False
+            self.texture = self.udar_texture[self.pers.storona]
+            return
+
+        if self.block.block or self.block.avto_block:
+            self.texture = self.block_texture[self.pers.storona]
+
+    def update_avto_block(self):
+        if self.pers.block.avto_block:
+            self.block.avto_block = True
+        else:
+            self.block.avto_block = False
+
+    def kd_timer(self):
+        self.s_kd += 1
+
+        if self.s_kd <= self.timer_for_s_kd:
+            self.action = False
+
+        if self.action:
+            self.s += 1
+
+        if self.s > self.timer_for_s:
+            self.action = False
+            self.s_kd = 0
+            self.s = 0
+
+    def udar_and_block(self, sprite):
+        for i in self.slovar:
+            if not self.block.block_func(sprite) and i == sprite and not self.slovar[i]:
+                self.slovar[i] = True
+                sprite.hp -= self.uron
 
 
 class Molniya(Stihiya):
@@ -814,99 +951,53 @@ class KulakGaia(arcade.Sprite):
 # Ближний юой
 
 
-class Mech(arcade.Sprite):
-    def __init__(self, pers, sprite_list, v_ataki=(30, 10)):
-        super().__init__()
-        self.tip = {COLD_ORUZHIE: 0}
-
+class Mech(ColdOruzhie):
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
+        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
         self.uron = 50
 
-        self.pers = pers
-        self.sprite_list = sprite_list
-
-        self.s = 0
-        self.s1 = 30
-        self.kd = v_ataki[0]
-        self.kd1 = v_ataki[1]
-
-        self.slovar = {}
-
-        self.udar_tex0 = arcade.load_texture_pair('nuzhno/udar.png')
-        self.udar_tex1 = arcade.load_texture_pair('nuzhno/udar1.png')
-        self.texture = self.udar_tex0[1]
+        self.udar_texture0 = arcade.load_texture_pair('nuzhno/udar.png')
+        self.udar_texture1 = arcade.load_texture_pair('nuzhno/udar1.png')
+        self.texture = self.udar_texture0[1]
         self.scale = 1.5
 
-        self.udar = False
-        self.s_udar = 0
+        self.s_kd = self.timer_for_s_kd + 5
 
     def on_update(self, delta_time: float = 1 / 60):
-        if self.s == 0:
-            for sprite in self.sprite_list:
-                self.slovar.update({sprite: False})
-            self.s += 1
-        if self.s1 <= self.kd or self.pers.minus_hp:
-            self.udar = False
-        if self.udar:
-            self.s_udar += 1
-        if self.s_udar > self.kd1:
-            self.s_udar = 0
-            self.udar = False
-            self.s1 = 0
+        self.update_slovar()
 
-        if self.udar:
+        self.kd_timer()
+
+        if self.action:
             for sprite in self.sprite_list:
-                if arcade.check_for_collision(self, sprite) and not sprite.block1:
-                    for i in self.slovar:
-                        if i == sprite and not self.slovar[i]:
-                            if not block_func(sprite, self.pers):
-                                self.slovar[i] = True
-                                sprite.hp -= self.uron
+                if arcade.check_for_collision(self, sprite):
+                    self.udar_and_block(sprite)
 
         if self.pers.storona == 0:
             self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
         elif self.pers.storona == 1:
             self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
 
-        if not self.udar:
-            for i in self.slovar:
-                self.slovar[i] = False
-
-        self.s1 += 1
-
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        if self.pers.storona == 0:
-            self.texture = self.udar_tex0[0]
-        else:
-            self.texture = self.udar_tex1[0]
+        self.update_storona()
 
 
-class DvuruchMech(arcade.Sprite):
-    def __init__(self, pers, sprite_list, v_ataki=(60, 20)):
-        super().__init__()
-        self.tip = {COLD_ORUZHIE: DVURUCH_MECH}
+class DvuruchMech(ColdOruzhie):
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
+        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+        self.tip[COLD_ORUZHIE] = DVURUCH_MECH
 
         self.uron = URON_DVURUCH_MECH
 
-        self.pers = pers
-        self.sprite_list = sprite_list
-
-        self.kd = v_ataki[0]
-        self.kd1 = v_ataki[1]
-        self.s = 0
-        self.s1 = self.kd1
-        self.s2 = 0
-
-        self.slovar = {}
-
-        self.udar_tex0 = arcade.load_texture_pair('nuzhno/udar.png')
-        self.udar_tex1 = arcade.load_texture_pair('nuzhno/udar1.png')
-        self.texture = self.udar_tex0[1]
+        self.udar_texture0 = arcade.load_texture_pair('nuzhno/udar.png')
+        self.udar_texture1 = arcade.load_texture_pair('nuzhno/udar1.png')
+        self.texture = self.udar_texture0[1]
         self.scale = 2
 
-        self.udar = False
-        self.s_udar = 0
+        self.s_kd = self.timer_for_s_kd + 5
 
         self.probit_block = False
+        self.s_probit_block = 0
         self.kombo = False
         for i in self.pers.tip_slovar:
             if i == 4 and self.pers.tip_slovar[i] == 4.1:
@@ -914,92 +1005,57 @@ class DvuruchMech(arcade.Sprite):
 
     def on_update(self, delta_time: float = 1 / 60):
         if self.probit_block:
-            self.s2 += 1
-        if self.s2 > 15:
-            self.s2 = 0
+            self.s_probit_block += 1
+        if self.s_probit_block > 15:
+            self.s_probit_block = 0
             self.probit_block = False
 
-        if self.s == 0:
-            for sprite in self.sprite_list:
-                self.slovar.update({sprite: False})
-            self.s += 1
-        if self.s1 <= self.kd or self.pers.minus_hp:
-            self.udar = False
-        if self.udar:
-            self.s_udar += 1
-        if self.s_udar > self.kd1:
-            self.s_udar = 0
-            self.udar = False
-            self.s1 = 0
+        self.update_slovar()
+
+        self.kd_timer()
 
         if self.kombo and self.pers.rivok:
             self.probit_block = True
-            self.s2 = 0
+            self.s_probit_block = 0
 
-        if self.udar:
+        if self.action:
             for sprite in self.sprite_list:
-                if arcade.check_for_collision(self, sprite) and not sprite.block1 and not self.probit_block:
-                    for i in self.slovar:
-                        if i == sprite and not self.slovar[i]:
-                            if not block_func(sprite, self.pers):
-                                self.slovar[i] = True
-                                sprite.hp -= self.uron
+                if arcade.check_for_collision(self, sprite) and not self.probit_block:
+                    self.udar_and_block(sprite)
                 elif arcade.check_for_collision(self, sprite) and self.probit_block:
-                    for i in self.slovar:
-                        if i == sprite and not self.slovar[i]:
-                            self.slovar[i] = True
-                            sprite.hp -= self.uron
+                    self.udar(sprite)
 
         if self.pers.storona == 0:
             self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
         elif self.pers.storona == 1:
             self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
 
-        if not self.udar:
-            for i in self.slovar:
-                self.slovar[i] = False
-
-        self.s1 += 1
-
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        if self.pers.storona == 0:
-            self.texture = self.udar_tex0[0]
-        else:
-            self.texture = self.udar_tex1[0]
+        self.update_storona()
 
 
-class Shchit(arcade.Sprite):
-    def __init__(self, pers, sprite_list):
-        super().__init__()
-        self.tip = {ZASHCHITA: 0}
-
+class Shchit(Zashchita):
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
+        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
         self.uron = URON_SHCHIT
 
-        self.pers = pers
-        self.sprite_list = sprite_list
         self.scale = 0.5
-        self.tex_shcit = arcade.load_texture_pair('nuzhno/shcit.png')
-        self.tex_udar = arcade.load_texture_pair('nuzhno/shcit_udar.png')
-        self.texture = self.tex_shcit[1]
-
-        self.block = False
-        self.block1 = False
-        self.sila = False
-        self.udar = False
-        self.s = 0
-        self.s1 = 15
-
-        self.slovar = {}
-
-        self.s = 0
+        self.block_texture = arcade.load_texture_pair('nuzhno/shcit.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/shcit_udar.png')
+        self.texture = self.block_texture[1]
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        self.s1 += 1
-        if self.s1 <= 15:
-            self.udar = False
+        if self.pers.block.block:
+            self.block.block = True
+        else:
+            self.block.block = False
+
+        self.update_slovar()
+
+        self.kd_timer()
 
         self.center_y = self.pers.center_y
-        if not self.udar:
+        if not self.action:
             self.center_y = self.pers.center_y
             if self.pers.storona == 1:
                 self.center_x = self.pers.center_x - 10
@@ -1011,105 +1067,14 @@ class Shchit(arcade.Sprite):
             else:
                 self.center_x = self.pers.center_x + 50
 
-        if self.s == 0:
+        if self.action:
             self.s += 1
-            for sprite in self.sprite_list:
-                self.slovar.update({sprite: False})
-
-        if len(self.slovar) < len(self.sprite_list):
-            self.slovar.clear()
-            self.s = 0
-
-        if self.s > 10:
-            self.udar = False
-            self.s1 = 0
-            self.s = 0
-
-        if self.udar:
-            self.s += 1
-            self.block = self.block1 = False
+            self.block.block = self.block.avto_block = False
             for sprite in self.sprite_list:
                 if arcade.check_for_collision(sprite, self):
-                    for i in self.slovar:
-                        if i == sprite and not self.slovar[i]:
-                            if not block_func(sprite, self.pers):
-                                self.slovar[i] = True
-                                sprite.hp -= self.uron
-            return
+                    self.udar_and_block(sprite)
 
-        if not self.udar:
-            for i in self.slovar:
-                self.slovar[i] = False
-
-        if self.pers.block1:
-            self.block1 = True
-        else:
-            self.block1 = False
+        self.update_avto_block()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        if self.udar:
-            self.block = self.block1 = False
-            self.texture = self.tex_udar[self.pers.storona]
-            return
-
-        if self.block or self.block1:
-            self.texture = self.tex_shcit[self.pers.storona]
-
-
-def block_func(pers, sprite, force=None):
-    r = 10
-    if sprite.block1:
-        return True
-    if sprite.reakciya < pers.reakciya and force is None:
-        if sprite.reakciya * r <= pers.reakciya:
-            pers.block = True
-            return True
-        else:
-            r -= 0.1
-            shanc = 99
-            while r > 1:
-                if sprite.reakciya * (r + 0.1) < sprite.reakciya * r <= pers.reakciya:
-                    break
-                r -= 0.1
-                shanc -= 1
-
-            shanc1 = shanc
-            while shanc >= shanc1:
-                if random.randint(1, 100) == shanc:
-                    pers.block = True
-                    return True
-                shanc -= 1
-
-            return False
-    elif sprite.reakciya > pers.reakciya and force is None:
-        if pers.reakciya * r <= sprite.reakciya:
-            return False
-        else:
-            r -= 0.1
-            shanc = 99
-            while r > 1:
-                if sprite.reakciya * (r + 0.1) < sprite.reakciya * r <= pers.reakciya:
-                    break
-                r -= 0.1
-                shanc -= 1
-
-            shanc1 = shanc
-            while shanc >= shanc1:
-                if random.randint(1, 100) == shanc:
-                    return False
-                shanc -= 1
-
-            pers.block = True
-            return True
-    elif sprite.reakciya == pers.reakciya and force is None:
-        if random.randint(1, 2) == 1:
-            pers.block = True
-            return True
-        else:
-            return False
-
-    if force is not None:
-        if pers.storona == 0:
-            return force
-        else:
-            return -force
+        self.udar_or_block_animation()

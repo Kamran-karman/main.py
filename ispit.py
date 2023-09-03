@@ -213,19 +213,22 @@ class Igra1GlavaViev(arcade.View):
             else:
                 self.fizika.set_friction(self.igrok, 1)
 
-        if self.igrok.molniya.udar and self.s1 == 0 and self.igrok.molniya.s_kd >= 300:
+                if self.igrok.molniya.action and self.s1 == 0 and self.igrok.molniya.s >= self.igrok.molniya.timer_for_s:
             self.s1 += 1
-            poz = self.igrok.molniya.koordinati()
+            poz = self.igrok.molniya.return_position()
             self.fizika.set_position(self.igrok, poz)
 
         self.fizika.step()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.L:
+            self.igrok.kulak_gaia.udar = True
+
         if symbol == arcade.key.RCTRL:
             self.igrok.veter_otalk.udar = True
 
         if symbol == arcade.key.RSHIFT:
-            self.igrok.shcit.block1 = True
+            self.igrok.block.block = True
 
         if symbol == arcade.key.LCTRL:
             self.zoom1 = True
@@ -236,17 +239,17 @@ class Igra1GlavaViev(arcade.View):
             self.zoom1 = False
 
         if symbol == arcade.key.SPACE:
-            self.igrok.udar = True
+            self.igrok.udar.action = True
 
         if symbol == arcade.key.NUM_2:
-            self.igrok.streliPeruna.udar = True
+            self.igrok.streliPeruna.action = True
 
         if symbol == arcade.key.NUM_0:
-            self.igrok.molniya.udar = True
+            self.igrok.molniya.action = True
             self.s1 = 0
 
         if symbol == arcade.key.NUM_1:
-            self.igrok.gnev_Tora.udar = True
+            self.igrok.gnev_Tora.action = True
 
         if symbol == arcade.key.D or symbol == arcade.key.RIGHT:
             self.pravo = True
@@ -264,7 +267,7 @@ class Igra1GlavaViev(arcade.View):
 
     def on_key_release(self, _symbol: int, _modifiers: int):
         if _symbol == arcade.key.RSHIFT:
-            self.igrok.shcit.block1 = False
+            self.igrok.block.block = False
 
         if _symbol == arcade.key.D or _symbol == arcade.key.RIGHT:
             self.pravo = False

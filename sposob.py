@@ -209,7 +209,7 @@ class ColdOruzhie(Fight):
 class FizSposobFight(Fight):
     def __init__(self, pers, sprite_list, uron, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list)
-        self.tip = {FIZ_SPOSOB: 0}
+        self.tip = {FIZ_SPOSOB: 0.0}
 
         self.uron = uron
 
@@ -219,6 +219,8 @@ class FizSposobFight(Fight):
         self.udar_texture = self.pers.udar_texture
 
         self.scale = self.pers.scale
+
+        self.block = Block(pers, sprite_list)
 
     def kd_timer(self):
         self.s_kd += 1
@@ -235,6 +237,12 @@ class FizSposobFight(Fight):
 
     def update_scale(self):
         self.scale = self.pers.scale
+
+    def udar_and_block(self, sprite):
+        for i in self.slovar:
+            if not self.block.block_func(sprite) and i == sprite and not self.slovar[i]:
+                self.slovar[i] = True
+                sprite.hp -= self.uron
 
 
 class Stihiya(Fight):
@@ -1139,4 +1147,3 @@ class Vila(ColdOruzhie):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.update_storona()
-        

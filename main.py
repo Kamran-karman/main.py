@@ -101,14 +101,14 @@ class Igra1GlavaViev(arcade.View):
         self.igrok = pers.Voyslav(self.vrag_list)
         self.igrok.position = IGROK_POSITION
         for x in range(200, 600, 100):
-            vrag = pers.Vrag(self.igrok, self.walls_list, self.zhivie_vrag_list)
-            vrag._position = x, 200
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list)
+            vrag._position = x, 400
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
         for x in range(-600, -200, 100):
-            vrag = pers.Vrag(self.igrok, self.walls_list, self.zhivie_vrag_list)
-            vrag._position = x, 200
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list)
+            vrag._position = x, 400
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
@@ -146,7 +146,6 @@ class Igra1GlavaViev(arcade.View):
         self.clear()
 
         self.smert_list1.draw()
-        self.zhivie_vrag_list.draw()
         for vrag in self.zhivie_vrag_list:
             vrag.draw()
             vrag.update_animation()
@@ -206,7 +205,7 @@ class Igra1GlavaViev(arcade.View):
 
         if self.igrok.molniya.action and self.s1 == 0 and self.igrok.molniya.s >= self.igrok.molniya.timer_for_s:
             self.s1 += 1
-            poz = self.igrok.molniya.koordinati()
+            poz = self.igrok.molniya.return_position()
             self.fizika.set_position(self.igrok, poz)
 
         self.fizika.step()

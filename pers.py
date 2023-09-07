@@ -642,6 +642,7 @@ class Gromila(Vrag):
             self.udar.draw()
         self.udar.update_animation()
 
+
 class ZhitelInnocentii(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, kast_scena)

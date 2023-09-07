@@ -22,6 +22,10 @@ URON_GROMILA = 100
 
 REAKCIYA_GROMILA = 10
 
+# ___ZhitelInnocentii___
+HP_ZHITEL_IN = 500
+REAKCIYA_ZHITEL_IN = 20
+
 
 class Pers(arcade.Sprite):
     def __init__(self, sprite_list):

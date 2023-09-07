@@ -444,6 +444,7 @@ class Udar(FizSposobFight):
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.texture = self.udar_texture[self.pers.storona]
 
+
 # Стихия молнии
 
 

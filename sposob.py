@@ -402,21 +402,39 @@ class Udar(FizSposobFight):
 
         self.s_kd = self.timer_for_s_kd + 5
 
+        self.probit_block = False
+
     def on_update(self, delta_time: float = 1 / 60) -> None:
+        if self.pers.sil:
+            self.probit_block = True
+
+        self.uron = self.pers.uron
+
         self.update_scale()
         self.update_position()
-        self.update_slovar()
+        if len(self.slovar) != len(self.sprite_list):
+            for sprite in self.sprite_list:
+                self.slovar.update({sprite: False})
+
+        if not self.action:
+            for i in self.slovar:
+                self.slovar[i] = False
 
         self.kd_timer()
 
         if self.action:
             for sprite in self.sprite_list:
                 if arcade.check_for_collision(self, sprite):
-                    self.udar(sprite)
+                    if not self.probit_block:
+                        self.udar_and_block(sprite)
+                    else:
+                        for i in self.slovar:
+                            if sprite == i and not self.slovar[i]:
+                                self.slovar[i] = True
+                                sprite.hp -= self.uron
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.texture = self.udar_texture[self.pers.storona]
-
 
 # Стихия молнии
 
@@ -1078,3 +1096,47 @@ class Shchit(Zashchita):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.udar_or_block_animation()
+
+
+class Vila(ColdOruzhie):
+    def __init__(self, pers, sprite_list, timer_for_s=60, timer_for_s_kd=20):
+        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+        self.uron = 30
+
+        self.s_kd = self.timer_for_s_kd + 5
+
+        self.udar_texture0 = arcade.load_texture_pair('nuzhno/vila.png')
+        self.udar_texture1 = arcade.load_texture_pair('nuzhno/vila.png')
+        self.texture = self.udar_texture1[1]
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.update_slovar()
+
+        self.kd_timer()
+
+        if self.action:
+            if self.pers.storona == 0:
+                if self.s < 30:
+                    self.change_x = 3
+                elif 30 <= self.s < 60:
+                    self.change_x = -3
+            elif self.pers.storona == 1:
+                if self.s < 30:
+                    self.change_x = -3
+                elif 30 <= self.s < 60:
+                    self.change_x = 3
+
+            for sprite in self.sprite_list:
+                if arcade.check_for_collision(self, sprite) and self.s < 30:
+                    self.udar_and_block(sprite)
+
+        if not self.action:
+            self.center_y = self.pers.center_y
+            if self.pers.storona == 0:
+                self.center_x = self.pers.center_x + 20
+            elif self.pers.storona == 1:
+                self.center_x = self.pers.center_x - 20
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.update_storona()
+        

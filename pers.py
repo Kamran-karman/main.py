@@ -35,6 +35,7 @@ class Pers(arcade.Sprite):
 
         self.reakciya = 0
         self.block = sposob.Block(self, self.sprite_list)
+        self.sil = False
         self.pariv = False
 
         self.storona = 1
@@ -115,6 +116,9 @@ class Pers(arcade.Sprite):
         if len(self.oruzh_list) == 0:
             if self.udar.action:
                 self.tipo_return = True
+        else:
+            for oruzh in self.oruzh_list:
+                self.udar.action = oruzh.action
 
     def idle_animation(self, dx):
         if abs(dx) < D_ZONE:
@@ -140,6 +144,10 @@ class Pers(arcade.Sprite):
 
     def return_position_func(self):
         return self.position
+
+    def update_kvadrat_radius(self):
+        self.kvadrat_radius.scale = self.scale
+        self.kvadrat_radius.position = self.position
 
 
 class Voyslav(Pers):
@@ -198,7 +206,7 @@ class Voyslav(Pers):
 
     def on_update(self, delta_time: float = 1 / 60):
         self.update_hp()
-        self.kvadrat_radius.position = self.position
+        self.update_kvadrat_radius()
 
         self.shchit.on_update()
 
@@ -281,7 +289,7 @@ class BetaMaster(Pers):
     def on_update(self, delta_time: float = 1 / 60):
         self.update_hp()
 
-        self.kvadrat_radius.position = self.position
+        self.update_kvadrat_radius()
 
         self.mech.on_update()
         self.shchit.on_update()
@@ -333,7 +341,8 @@ class Vrag(Pers):
         self.udar.sprite_list = self.igrok_list
 
     def ii(self, dx, physics_engine):
-        self.radius_vid.position = self.radius_ataki.position = self.kvadrat_radius.position = self.position
+        self.radius_vid.position = self.radius_ataki.position = self.position
+        self.update_kvadrat_radius()
         if not self.smert:
             self.update_storona(dx, physics_engine)
 
@@ -580,6 +589,8 @@ class Gromila(Vrag):
         self.hp = HP_GROMILA
         self.uron = URON_GROMILA
 
+        self.sil = True
+
         self.reakciya = REAKCIYA_GROMILA
 
         self.scale = 2
@@ -630,3 +641,60 @@ class Gromila(Vrag):
         if self.udar.action:
             self.udar.draw()
         self.udar.update_animation()
+
+class ZhitelInnocentii(Vrag):
+    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+        self.hp = HP_ZHITEL_IN
+        self.reakciya = REAKCIYA_ZHITEL_IN
+
+        self.scale = 0.9
+
+        main_patch = ':resources:images/animated_characters/female_person/femalePerson_'
+        self.idle_texture = arcade.load_texture_pair(f'{main_patch}idle.png')
+        self.jump_texture = arcade.load_texture_pair(f'{main_patch}jump.png')
+        self.fall_texture = arcade.load_texture_pair(f'{main_patch}fall.png')
+        self.udar_texture = arcade.load_texture_pair(f'{main_patch}climb0.png')
+        self.texture = self.idle_texture[1]
+        for i in range(8):
+            tex = arcade.load_texture_pair(f"{main_patch}walk{i}.png")
+            self.walk_t.append(tex)
+
+        self.pers = 'zhitel_innocentii'
+
+        self.vila = sposob.Vila(self, self.igrok_list)
+        self.oruzh_list.append(self.vila)
+
+    def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.tipo_return = False
+
+        if not self.smert:
+            self.ii(dx, physics_engine)
+
+            self.block_func()
+            if self.tipo_return:
+                return
+            self.udar_func()
+            if self.tipo_return:
+                return
+
+            self.jump_animation(dy)
+            if self.tipo_return:
+                return
+            self.idle_animation(dx)
+            if self.tipo_return:
+                return
+            self.walk_animation()
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.update_hp()
+        self.update_udar()
+
+        for oruzh in self.oruzh_list:
+            oruzh.on_update()
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        for oruzh in self.oruzh_list:
+            oruzh.draw()
+            oruzh.update_animation()
+            oruzh.update()

@@ -9,7 +9,7 @@ KOOR_Y = 500
 D_ZONE = 0.005
 
 # ___Vrag___
-HP_VRAG = 500
+HP_BETA_BALVANCHIK = 10000
 
 # ___Voin_Innocentii___
 HP_V_I = 1000
@@ -101,6 +101,16 @@ class Pers(arcade.Sprite):
 
         self.x_odometr += dx
 
+    def udar_func(self):
+        self.udar.udar_texture = self.udar_texture
+        self.udar.on_update()
+        if len(self.oruzh_list) == 0:
+            if self.udar.action:
+                self.tipo_return = True
+        else:
+            for oruzh in self.oruzh_list:
+                self.udar.action = oruzh.action
+
     def block_func(self):
         block = False
         self.block.update_block()
@@ -112,16 +122,6 @@ class Pers(arcade.Sprite):
                 break
         if self.block.block or self.block.avto_block and block:
             self.texture = self.block_texture[self.storona]
-
-    def udar_func(self):
-        self.udar.udar_texture = self.udar_texture
-        self.udar.on_update()
-        if len(self.oruzh_list) == 0:
-            if self.udar.action:
-                self.tipo_return = True
-        else:
-            for oruzh in self.oruzh_list:
-                self.udar.action = oruzh.action
 
     def idle_animation(self, dx):
         if abs(dx) < D_ZONE:
@@ -158,7 +158,7 @@ class Voyslav(Pers):
         super().__init__(sprite_list)
         self.pers = 'igrok'
 
-        self.hp = 100000
+        self.hp = 1000
 
         self.reakciya = 990
 
@@ -190,7 +190,7 @@ class Voyslav(Pers):
         self.tipo_return = False
         self.update_storona(dx, physics_engine)
 
-        self.block_func(self.shchit)
+        self.block_func()
         if self.tipo_return:
             return
         self.udar_func()
@@ -218,7 +218,7 @@ class Voyslav(Pers):
         self.shar_mol.update()
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.block or self.block1 or self.shchit.udar:
+        if self.block.block or self.block.avto_block or self.shchit.action:
             self.shchit.draw()
 
         self.shchit.update_animation()
@@ -344,8 +344,8 @@ class Vrag(Pers):
         self.udar.sprite_list = self.igrok_list
 
     def ii(self, dx, physics_engine):
-        self.radius_vid.position = self.radius_ataki.position = self.position
         self.update_kvadrat_radius()
+        self.radius_vid.position = self.radius_ataki.position = self.position
         if not self.smert:
             self.update_storona(dx, physics_engine)
 
@@ -435,7 +435,7 @@ class BetaBalvanchik(Vrag):
         super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
         self.pers = 'betabalvanchik'
 
-        self.hp = HP_VRAG
+        self.hp = HP_BETA_BALVANCHIK
 
         self.scale = 1.2
 
@@ -451,7 +451,7 @@ class BetaBalvanchik(Vrag):
             self.walk_t.append(tex)
         self.texture = self.idle_texture[0]
 
-        self.mech = sposob.Mech(self, self.igrok_list, (60, 20))
+        self.mech = sposob.Mech(self, self.igrok_list, 20, 60)
         self.oruzh_list.append(self.mech)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
@@ -479,12 +479,10 @@ class BetaBalvanchik(Vrag):
         self.update_hp()
         self.update_udar()
 
-    def draw(self, *, filter=None, pixelated=None, blend_function=None):
-        if self.mech.action:
-            self.mech.draw()
-
     def update_animation(self, delta_time: float = 1 / 60):
         self.mech.update_animation()
+        if self.mech.action:
+            self.mech.draw()
 
     def return_force(self, xy=str()):
         if not self.is_on_ground:
@@ -518,12 +516,12 @@ class VoinInnocentii(Vrag):
 
         self.texture = self.idle_texture[self.storona]
 
-        self.rivok_sposob = sposob.Rivok(self, self.sprite_list)
+        self.rivok_sposob = sposob.Rivok(self, sprite_list)
         self.tip_slovar.update(self.rivok_sposob.tip)
 
         self.pers = 'voin_innocentii'
 
-        self.dvuruch_mech = sposob.DvuruchMech(self, self.igrok_list)
+        self.dvuruch_mech = sposob.DvuruchMech(self, self.igrok_list, 30, 90)
         self.oruzh_list.append(self.dvuruch_mech)
         self.tip_slovar.update(self.dvuruch_mech.tip)
 

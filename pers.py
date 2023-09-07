@@ -65,7 +65,6 @@ class Pers(arcade.Sprite):
         self.pers = ''
 
         self.return_position = True
-        self.rivok = False
 
         self.tipo_return = False
 

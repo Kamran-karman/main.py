@@ -115,12 +115,12 @@ class Pers(arcade.Sprite):
         block = False
         self.block.update_block()
         for tip in self.tip_slovar:
-            if tip != 0:
-                block = True
-            else:
+            if tip == 0:
                 block = False
+            else:
+                block = True
                 break
-        if self.block.block or self.block.avto_block and block:
+        if (self.block.block or self.block.avto_block) and block:
             self.texture = self.block_texture[self.storona]
 
     def idle_animation(self, dx):
@@ -322,7 +322,7 @@ class BetaMaster(Pers):
 
 
 class Vrag(Pers):
-    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
         super().__init__(sprite_list)
         self.force_x = 0
         self.force_y = 0
@@ -340,6 +340,7 @@ class Vrag(Pers):
         self.stop1 = False
 
         self.kast_scena = kast_scena
+        self.tip = tip
 
         self.udar.sprite_list = self.igrok_list
 
@@ -429,10 +430,14 @@ class Vrag(Pers):
         if xy == 'y':
             return self.force_y
 
+    def oruzh_update_animation(self):
+        for oruzh in self.oruzh_list:
+            pass
+
 
 class BetaBalvanchik(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
-        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.pers = 'betabalvanchik'
 
         self.hp = HP_BETA_BALVANCHIK
@@ -494,8 +499,8 @@ class BetaBalvanchik(Vrag):
 
 
 class VoinInnocentii(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
-        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
 
         self.hp = HP_V_I
         self.reakciya = REAKCIYA_V_I
@@ -585,8 +590,8 @@ class VoinInnocentii(Vrag):
 
 
 class Gromila(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
-        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_GROMILA
         self.uron = URON_GROMILA
 
@@ -645,8 +650,8 @@ class Gromila(Vrag):
 
 
 class ZhitelInnocentii(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, kast_scena=False):
-        super().__init__(igrok, sprite_list, v_drug_list, kast_scena)
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_ZHITEL_IN
         self.reakciya = REAKCIYA_ZHITEL_IN
 

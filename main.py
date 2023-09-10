@@ -100,13 +100,13 @@ class Igra1GlavaViev(arcade.View):
 
         self.igrok = pers.Voyslav(self.vrag_list)
         self.igrok.position = IGROK_POSITION
-        for x in range(200, 600, 100):
+        for x in range(200, 400, 100):
             vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list)
             vrag._position = x, 400
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
-        for x in range(-600, -200, 100):
+        for x in range(-400, -200, 100):
             vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list)
             vrag._position = x, 400
             self.zhivie_vrag_list.append(vrag)

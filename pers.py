@@ -63,8 +63,7 @@ class Pers(arcade.Sprite):
 
         self.kvadrat_radius = hit_box_and_radius.KvadratRadius(self.scale)
 
-        self.oruzh_list = arcade.SpriteList()
-        self.tip_slovar = {}
+        self.sposob_list = arcade.SpriteList()
 
         self.pers = ''
 
@@ -104,22 +103,22 @@ class Pers(arcade.Sprite):
     def udar_func(self):
         self.udar.udar_texture = self.udar_texture
         self.udar.on_update()
-        if len(self.oruzh_list) == 0:
+        if len(self.sposob_list) == 0:
             if self.udar.action:
                 self.tipo_return = True
         else:
-            for oruzh in self.oruzh_list:
+            for oruzh in self.sposob_list:
                 self.udar.action = oruzh.action
 
     def block_func(self):
         block = False
         self.block.update_block()
-        for tip in self.tip_slovar:
-            if tip == 0:
+        for oruzh in self.sposob_list:
+            if oruzh.tip // 100 == 1:
                 block = False
+                break
             else:
                 block = True
-                break
         if (self.block.block or self.block.avto_block) and block:
             self.texture = self.block_texture[self.storona]
 
@@ -177,22 +176,24 @@ class Voyslav(Pers):
         self.texture = self.idle_texture[0]
 
         self.shchit = sposob.Shchit(self, self.sprite_list, 15, 5)
-        self.tip_slovar.update(self.shchit.tip)
-
-        self.oruzh_list.append(self.shchit)
+        self.sposob_list.append(self.shchit)
 
         self.molniya = sposob.CepnayaMolniay(self, self.sprite_list)
+        self.sposob_list.append(self.molniya)
         self.gnev_Tora = sposob.GnevTora(self, self.sprite_list)
+        self.sposob_list.append(self.gnev_Tora)
         self.streliPeruna = sposob.StreliPeruna(self, self.sprite_list)
+        self.sposob_list.append(self.streliPeruna)
         self.shar_mol = sposob.SharMolniay(self, self.sprite_list)
+        self.sposob_list.append(self.shar_mol)
+        self.udar_Zevsa = sposob.UdarZevsa(self, self.sprite_list)
+        self.sposob_list.append(self.udar_Zevsa)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
         self.update_storona(dx, physics_engine)
 
         self.block_func()
-        if self.tipo_return:
-            return
         self.udar_func()
         if self.tipo_return:
             return
@@ -216,6 +217,7 @@ class Voyslav(Pers):
         self.gnev_Tora.on_update()
         self.shar_mol.on_update()
         self.shar_mol.update()
+        self.udar_Zevsa.on_update()
 
     def update_animation(self, delta_time: float = 1 / 60):
         if self.block.block or self.block.avto_block or self.shchit.action:
@@ -229,6 +231,7 @@ class Voyslav(Pers):
         self.molniya.update_animation()
         self.gnev_Tora.update_animation()
         self.streliPeruna.update_animation()
+        self.udar_Zevsa.update_animation()
 
 
 class BetaMaster(Pers):
@@ -255,12 +258,10 @@ class BetaMaster(Pers):
         self.texture = self.idle_texture[0]
 
         self.shchit = sposob.Shchit(self, self.sprite_list, 10, 10)
-        self.oruzh_list.append(self.shchit)
-        self.tip_slovar.update(self.shchit.tip)
+        self.sposob_list.append(self.shchit)
 
         self.mech = sposob.Mech(self, self.sprite_list, 10, 5)
-        self.oruzh_list.append(self.mech)
-        self.tip_slovar.update(self.mech.tip)
+        self.sposob_list.append(self.mech)
 
         self.molniya = sposob.CepnayaMolniay(self, self.sprite_list)
         self.gnev_Tora = sposob.GnevTora(self, self.sprite_list)
@@ -322,7 +323,7 @@ class BetaMaster(Pers):
 
 
 class Vrag(Pers):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0, 0), kast_scena=False):
         super().__init__(sprite_list)
         self.force_x = 0
         self.force_y = 0
@@ -409,18 +410,20 @@ class Vrag(Pers):
                 self.force_x, self.force_y = 0., 0.
 
     def update_udar(self):
-        if len(self.oruzh_list) == 0:
+        if len(self.sposob_list) == 0:
             if self.radius_ataki.check_collision(self.igrok):
                 self.udar.action = True
             else:
                 self.udar.action = False
-        elif len(self.oruzh_list) > 0:
-            for oruzh in self.oruzh_list:
-                if self.radius_ataki.check_collision(self.igrok):
+        elif len(self.sposob_list) > 0:
+            for oruzh in self.sposob_list:
+                if (self.radius_ataki.check_collision(self.igrok) and oruzh.tip // 100 == self.tip[0] and
+                        oruzh.tip % 10 == self.tip[1]):
                     oruzh.action = True
                 else:
                     oruzh.action = False
                 oruzh.on_update()
+                oruzh.update()
 
     def return_force(self, xy: str):
         if not self.is_on_ground:
@@ -431,12 +434,20 @@ class Vrag(Pers):
             return self.force_y
 
     def oruzh_update_animation(self):
-        for oruzh in self.oruzh_list:
-            pass
+        if len(self.sposob_list) > 0:
+            for oruzh in self.sposob_list:
+                if oruzh.tip // 100 == self.tip[0] and oruzh.tip % 10 == self.tip[1]:
+                    if oruzh.action:
+                        oruzh.draw()
+                    oruzh.update_animation()
+        else:
+            if self.udar.action:
+                self.udar.draw()
+                self.udar.update_animation()
 
 
 class BetaBalvanchik(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.pers = 'betabalvanchik'
 
@@ -457,7 +468,7 @@ class BetaBalvanchik(Vrag):
         self.texture = self.idle_texture[0]
 
         self.mech = sposob.Mech(self, self.igrok_list, 20, 60)
-        self.oruzh_list.append(self.mech)
+        self.sposob_list.append(self.mech)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
@@ -485,9 +496,7 @@ class BetaBalvanchik(Vrag):
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60):
-        self.mech.update_animation()
-        if self.mech.action:
-            self.mech.draw()
+        self.oruzh_update_animation()
 
     def return_force(self, xy=str()):
         if not self.is_on_ground:
@@ -499,7 +508,7 @@ class BetaBalvanchik(Vrag):
 
 
 class VoinInnocentii(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
 
         self.hp = HP_V_I
@@ -522,13 +531,11 @@ class VoinInnocentii(Vrag):
         self.texture = self.idle_texture[self.storona]
 
         self.rivok_sposob = sposob.Rivok(self, sprite_list)
-        self.tip_slovar.update(self.rivok_sposob.tip)
 
         self.pers = 'voin_innocentii'
 
         self.dvuruch_mech = sposob.DvuruchMech(self, self.igrok_list, 30, 90)
-        self.oruzh_list.append(self.dvuruch_mech)
-        self.tip_slovar.update(self.dvuruch_mech.tip)
+        self.sposob_list.append(self.dvuruch_mech)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
@@ -572,9 +579,7 @@ class VoinInnocentii(Vrag):
             self.rivok_sposob.draw()
         self.rivok_sposob.update_animation()
 
-        if self.dvuruch_mech.action:
-            self.dvuruch_mech.draw()
-        self.dvuruch_mech.update_animation()
+        self.oruzh_update_animation()
 
     def rivok_func(self):
         if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
@@ -590,7 +595,7 @@ class VoinInnocentii(Vrag):
 
 
 class Gromila(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_GROMILA
         self.uron = URON_GROMILA
@@ -643,13 +648,11 @@ class Gromila(Vrag):
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        if self.udar.action:
-            self.udar.draw()
-        self.udar.update_animation()
+        self.oruzh_update_animation()
 
 
 class ZhitelInnocentii(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=-1, kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_ZHITEL_IN
         self.reakciya = REAKCIYA_ZHITEL_IN
@@ -669,7 +672,9 @@ class ZhitelInnocentii(Vrag):
         self.pers = 'zhitel_innocentii'
 
         self.vila = sposob.Vila(self, self.igrok_list)
-        self.oruzh_list.append(self.vila)
+        self.sposob_list.append(self.vila)
+        self.topor = sposob.Topor(self, self.igrok_list, 30, 20)
+        self.sposob_list.append(self.topor)
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
@@ -696,11 +701,5 @@ class ZhitelInnocentii(Vrag):
         self.update_hp()
         self.update_udar()
 
-        for oruzh in self.oruzh_list:
-            oruzh.on_update()
-
     def update_animation(self, delta_time: float = 1 / 60) -> None:
-        for oruzh in self.oruzh_list:
-            oruzh.draw()
-            oruzh.update_animation()
-            oruzh.update()
+        self.oruzh_update_animation()

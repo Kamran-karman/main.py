@@ -640,7 +640,6 @@ class Gromila(Vrag):
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_hp()
-
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:

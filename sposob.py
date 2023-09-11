@@ -7,13 +7,27 @@ MOL_BLUE = (44, 117, 255, 255)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
-ZASHCHITA = 0
-COLD_ORUZHIE = 1
-DVURUCH_MECH = 1.1
-DAL_ORUZH = 2
-STIHIYA = 3
-FIZ_SPOSOB = 4
-RIVOK = 4.1
+ZASHCHITA = 100
+SHCHIT = 101
+
+COLD_ORUZHIE = 200
+MECH = 201
+DVURUCH_MECH = 202
+VILA = 204
+TOPOR = 205
+
+DAL_ORUZH = 300
+
+STIHIYA = 400
+CEPNAYA_MOLNIYA = 401
+GNEV_TORA = 402
+STRELI_PERUNA = 403
+SHAR_MOLNIYA = 404
+UDAR_ZEVSA = 405
+
+FIZ_SPOSOB = 500
+UDAR = 501
+RIVOK = 501
 
 
 # ___SharMolniay___
@@ -29,6 +43,13 @@ S_DO_PROMAH = 45
 VZRIV_BAF_URON = 1.5
 PROMAH_DEBAF_URON = 1.5
 BAF_URON = 19.067
+# ______________________
+
+
+# ___UdarZevsa___
+URON_UDAR_ZEVSA = 100
+
+S_KD_UDAR_ZEVSA = 300
 # ______________________
 
 
@@ -149,7 +170,6 @@ class Block(Sposob):
 class Mobilnost(Sposob):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
-        self.tip = {FIZ_SPOSOB: 0.0}
 
         self.scale = self.pers.scale
 
@@ -185,7 +205,6 @@ class Fight(Sposob):
 class ColdOruzhie(Fight):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list)
-        self.tip = {COLD_ORUZHIE: 0.0}
 
         self.timer_for_s = timer_for_s
         self.timer_for_s_kd = timer_for_s_kd
@@ -225,7 +244,6 @@ class ColdOruzhie(Fight):
 class FizSposobFight(Fight):
     def __init__(self, pers, sprite_list, uron, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list)
-        self.tip = {FIZ_SPOSOB: 0.0}
 
         self.uron = uron
 
@@ -264,7 +282,6 @@ class FizSposobFight(Fight):
 class Stihiya(Fight):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
-        self.tip = {STIHIYA: 0}
 
         self.radius = None
         self.radius: hit_box_and_radius.Radius
@@ -296,7 +313,6 @@ class Stihiya(Fight):
 class Zashchita(Fight):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list)
-        self.tip = {ZASHCHITA: 0.0}
 
         self.timer_for_s = timer_for_s
         self.timer_for_s_kd = timer_for_s_kd
@@ -355,7 +371,7 @@ class Molniya(Stihiya):
 class Rivok(Mobilnost):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
-        self.tip[FIZ_SPOSOB] = RIVOK
+        self.tip = RIVOK
 
         self.rivok_tex = (
             arcade.load_texture_pair(':resources:images/animated_characters/male_person/malePerson_walk7.png'))
@@ -423,6 +439,7 @@ class Rivok(Mobilnost):
 class Udar(FizSposobFight):
     def __init__(self, pers, sprite_list, uron, timer_for_s=10, timer_for_s_kd=30):
         super().__init__(pers, sprite_list, uron, timer_for_s, timer_for_s_kd)
+        self.tip = UDAR
 
         self.s_kd = self.timer_for_s_kd + 5
 
@@ -463,6 +480,8 @@ class Udar(FizSposobFight):
 class CepnayaMolniay(Molniya):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
+        self.tip = CEPNAYA_MOLNIYA
+
         self.uron = 250
 
         self.en_x = 0
@@ -590,6 +609,7 @@ class CepnayaMolniay(Molniya):
 class GnevTora(Molniya):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
+        self.tip = GNEV_TORA
         self.uron = 300
 
         self.radius = hit_box_and_radius.Radius(0.5)
@@ -619,6 +639,7 @@ class GnevTora(Molniya):
 class StreliPeruna(Molniya):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
+        self.tip = STRELI_PERUNA
         self.uron = 100
 
         self.radius = hit_box_and_radius.Radius(2.5)
@@ -676,6 +697,8 @@ class StreliPeruna(Molniya):
 class SharMolniay(Molniya):
     def __init__(self, pers, sprite_list):
         super().__init__(pers, sprite_list)
+        self.tip = SHAR_MOLNIYA
+
         self.uron = URON_SHAR_MOL
         self.uron1 = URON1_SHAR_MOL
 
@@ -831,6 +854,44 @@ class SharMolniay(Molniya):
                                     sprite.hp -= uron1 * round(self.baf_uron, 2)
                 spisok_rast.remove(spisok_rast[min_index])
                 spisok_xy.remove(spisok_xy[min_index])
+
+
+class UdarZevsa(Molniya):
+    def __init__(self, pers, sprite_list):
+        super().__init__(pers, sprite_list)
+        self.tip = UDAR_ZEVSA
+        self.uron = URON_UDAR_ZEVSA
+
+        self.timer_for_s_kd = S_KD_UDAR_ZEVSA
+        self.kd = self.timer_for_s_kd + 5
+
+        self.timer_for_s = 300
+
+        self.radius = hit_box_and_radius.Radius(1.5)
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.update_position()
+        self.update_radius_position()
+        self.update_slovar(1)
+
+        self.kd_timer()
+
+        if self.action:
+            if self.s % 30 == 0:
+                self.update_slovar(2)
+
+            for sprite in self.sprite_list:
+                if self.radius.check_collision(sprite):
+                    self.udar(sprite)
+                    break
+
+        self.update_slovar(2)
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        if self.action:
+            for sprite in self.sprite_list:
+                arcade.draw_line(self.pers.center_x, self.pers.center_y, sprite.center_x, sprite.center_y, MOL_BLUE, 15)
+                break
 
 
 # Стихия ветра
@@ -1001,6 +1062,7 @@ class KulakGaia(arcade.Sprite):
 class Mech(ColdOruzhie):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+        self.tip = MECH
         self.uron = 50
 
         self.udar_texture0 = arcade.load_texture_pair('nuzhno/udar.png')
@@ -1034,7 +1096,7 @@ class Mech(ColdOruzhie):
 class DvuruchMech(ColdOruzhie):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
-        self.tip[COLD_ORUZHIE] = DVURUCH_MECH
+        self.tip = DVURUCH_MECH
 
         self.uron = URON_DVURUCH_MECH
 
@@ -1048,8 +1110,8 @@ class DvuruchMech(ColdOruzhie):
         self.probit_block = False
         self.s_probit_block = 0
         self.kombo = False
-        for i in self.pers.tip_slovar:
-            if i == 4 and self.pers.tip_slovar[i] == 4.1:
+        for oruzh in self.pers.sposob_list:
+            if oruzh.tip % 10:
                 self.kombo = True
 
     def on_update(self, delta_time: float = 1 / 60):
@@ -1088,6 +1150,7 @@ class DvuruchMech(ColdOruzhie):
 class Shchit(Zashchita):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+        self.tip = SHCHIT
         self.uron = URON_SHCHIT
 
         self.scale = 0.5
@@ -1131,12 +1194,13 @@ class Shchit(Zashchita):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.udar_or_block_animation()
-
+        
 
 class Vila(ColdOruzhie):
-    def __init__(self, pers, sprite_list, timer_for_s=60, timer_for_s_kd=20):
+    def __init__(self, pers, sprite_list, timer_for_s=50, timer_for_s_kd=20):
         super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
-        self.uron = 30
+        self.tip = VILA
+        self.uron = URON_VILA
 
         self.s_kd = self.timer_for_s_kd + 5
 
@@ -1151,14 +1215,14 @@ class Vila(ColdOruzhie):
 
         if self.action:
             if self.pers.storona == 0:
-                if self.s < 30:
+                if self.s < self.timer_for_s // 2:
                     self.change_x = 3
-                elif 30 <= self.s < 60:
+                elif self.timer_for_s // 2 <= self.s < self.timer_for_s:
                     self.change_x = -3
             elif self.pers.storona == 1:
-                if self.s < 30:
+                if self.s < self.timer_for_s // 2:
                     self.change_x = -3
-                elif 30 <= self.s < 60:
+                elif self.timer_for_s // 2 <= self.s < self.timer_for_s:
                     self.change_x = 3
 
             for sprite in self.sprite_list:
@@ -1181,6 +1245,7 @@ class Vila(ColdOruzhie):
 class Topor(ColdOruzhie):
     def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
         super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+        self.tip = TOPOR
         self.uron = URON_TOPOR
 
         self.s_kd = self.timer_for_s_kd + 5
@@ -1188,16 +1253,24 @@ class Topor(ColdOruzhie):
         self.udar_texture0 = arcade.load_texture_pair('nuzhno/topor0.png')
         self.udar_texture1 = arcade.load_texture_pair('nuzhno/topor1.png')
         self.texture = self.udar_texture0[0]
+        self.angle = 10
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_slovar(1)
+        self.update_position()
 
         self.kd_timer()
 
         if self.action:
+            if 10 <= self.s < 20: #self.timer_for_s - self.timer_for_s // 3
+                self.change_angle = - 12
+            else:
+                self.change_angle = 0
             for sprite in self.sprite_list:
                 if arcade.check_for_collision(self, sprite):
                     self.udar_and_block(sprite)
+        else:
+            self.angle = 10
 
         self.update_slovar(2)
 

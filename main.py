@@ -1,9 +1,7 @@
 import random
-import time
 import arcade
 import arcade.gui
 from dataclasses import dataclass
-from array import array
 import arcade.gl
 import pers
 
@@ -101,22 +99,27 @@ class Igra1GlavaViev(arcade.View):
         self.igrok = pers.Voyslav(self.vrag_list)
         self.igrok.position = IGROK_POSITION
         for x in range(200, 400, 100):
-            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list)
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list, (2, 4))
             vrag._position = x, 400
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
         for x in range(-400, -200, 100):
-            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list)
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list, (2, 4))
             vrag._position = x, 400
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
 
         for x in range(700, 1000, 150):
-            voin_in = pers.VoinInnocentii(self.igrok, self.walls_list, self.v_drug_list)
+            voin_in = pers.VoinInnocentii(self.igrok, self.walls_list, self.v_drug_list, (2, 2))
             voin_in.position = x, 200
             self.zhivie_vrag_list.append(voin_in)
             self.vrag_list.append(voin_in)
+
+        vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.v_drug_list, (2, 5))
+        vrag._position = -850, 300
+        self.zhivie_vrag_list.append(vrag)
+        self.vrag_list.append(vrag)
 
         gromila = pers.Gromila(self.igrok, self.walls_list, self.v_drug_list)
         gromila.position = -750, 300
@@ -211,6 +214,9 @@ class Igra1GlavaViev(arcade.View):
         self.fizika.step()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.RALT:
+            self.igrok.udar_Zevsa.action = True
+
         if symbol == arcade.key.RCTRL:
             self.igrok.shar_mol.zaryad = True
 

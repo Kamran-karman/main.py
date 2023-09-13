@@ -247,6 +247,9 @@ class Igra1GlavaViev(arcade.View):
                 self.fizika.apply_force(self.igrok, force)
 
     def on_key_release(self, _symbol: int, _modifiers: int):
+        if _symbol == arcade.key.RALT:
+            self.igrok.udar_Zevsa.action = False
+
         if _symbol == arcade.key.RCTRL:
             self.igrok.shar_mol.action = True
             self.igrok.shar_mol.zaryad = False

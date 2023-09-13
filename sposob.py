@@ -35,21 +35,24 @@ SKOROST_SHAR_MOLNII = 20
 URON_SHAR_MOL = 25
 URON1_SHAR_MOL = 5
 
-S_KD_SHAR_MOLNII = 300
-MAX_S_ZARYAD = 420
-MAX_BAF_S_ZARYAD = 300
-S_DO_PROMAH = 45
+S_KD_SHAR_MOL = 300
+MAX_S_ZARYAD_SHAR_MOL = 420
+MAX_BAF_S_ZARYAD_SHAR_MOL = 300
+S_DO_PROMAH_SHAR_MOL = 45
 
-VZRIV_BAF_URON = 1.5
-PROMAH_DEBAF_URON = 1.5
-BAF_URON = 19.067
+VZRIV_BAF_URON_SHAR_MOL = 1.5
+PROMAH_DEBAF_URON_SHAR_MOL = 1.5
+BAF_URON_SHAR_MOL = 19.067
 # ______________________
 
 
 # ___UdarZevsa___
-URON_UDAR_ZEVSA = 100
+URON_UDAR_ZEVSA = 10
 
-S_KD_UDAR_ZEVSA = 300
+S_KD_UDAR_ZEVSA = 600
+S_UDAR_ZEVSA = 300
+
+BAF_URON_UDAR_ZEVSA = 1.5
 # ______________________
 
 
@@ -199,7 +202,35 @@ class Fight(Sposob):
         for i in self.slovar:
             if i == sprite and not self.slovar[i]:
                 self.slovar[i] = True
-                sprite.hp -= self.uron
+                sprite.hp -= round(self.uron)
+
+    def kd_timer1(self):
+        self.s_kd += 1
+        if self.s_kd <= self.timer_for_s_kd:
+            self.action = False
+
+        if self.s > self.timer_for_s:
+            self.action = False
+            self.s = 0
+
+        if self.action:
+            self.s += 1
+        if self.action and self.s == 1:
+            self.s_kd = 0
+
+    def kd_timer0(self):
+        self.s_kd += 1
+
+        if self.s_kd <= self.timer_for_s_kd:
+            self.action = False
+
+        if self.action:
+            self.s += 1
+
+        if self.s > self.timer_for_s:
+            self.action = False
+            self.s_kd = 0
+            self.s = 0
 
 
 class ColdOruzhie(Fight):
@@ -214,25 +245,11 @@ class ColdOruzhie(Fight):
 
         self.block = Block(pers, sprite_list)
 
-    def kd_timer(self):
-        self.s_kd += 1
-
-        if self.s_kd <= self.timer_for_s_kd:
-            self.action = False
-
-        if self.action:
-            self.s += 1
-
-        if self.s > self.timer_for_s:
-            self.action = False
-            self.s_kd = 0
-            self.s = 0
-
     def udar_and_block(self, sprite):
         for i in self.slovar:
             if not self.block.block_func(sprite) and i == sprite and not self.slovar[i]:
                 self.slovar[i] = True
-                sprite.hp -= self.uron
+                sprite.hp -= round(self.uron)
 
     def update_storona(self):
         if self.pers.storona == 0:
@@ -256,19 +273,6 @@ class FizSposobFight(Fight):
 
         self.block = Block(pers, sprite_list)
 
-    def kd_timer(self):
-        self.s_kd += 1
-
-        if self.s_kd <= self.timer_for_s_kd:
-            self.action = False
-
-        if self.action:
-            self.s += 1
-            if self.s > self.timer_for_s:
-                self.action = False
-                self.s_kd = 0
-                self.s = 0
-
     def update_scale(self):
         self.scale = self.pers.scale
 
@@ -286,28 +290,8 @@ class Stihiya(Fight):
         self.radius = None
         self.radius: hit_box_and_radius.Radius
 
-        self.kd = True
-
     def update_radius_position(self):
         self.radius.position = self.position
-
-    def kd_timer(self):
-        self.s_kd += 1
-        if self.s_kd > self.timer_for_s_kd:
-            self.kd = False
-
-        if self.kd:
-            self.action = False
-
-        if self.s > self.timer_for_s:
-            self.kd = True
-            self.action = False
-            self.s = 0
-
-        if self.action:
-            self.s += 1
-        if self.action and self.s == 1:
-            self.s_kd = 0
 
 
 class Zashchita(Fight):
@@ -337,20 +321,6 @@ class Zashchita(Fight):
             self.block.avto_block = True
         else:
             self.block.avto_block = False
-
-    def kd_timer(self):
-        self.s_kd += 1
-
-        if self.s_kd <= self.timer_for_s_kd:
-            self.action = False
-
-        if self.action:
-            self.s += 1
-
-        if self.s > self.timer_for_s:
-            self.action = False
-            self.s_kd = 0
-            self.s = 0
 
     def udar_and_block(self, sprite):
         for i in self.slovar:
@@ -455,7 +425,7 @@ class Udar(FizSposobFight):
         self.update_position()
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer0()
 
         if self.action:
             for sprite in self.sprite_list:
@@ -497,7 +467,7 @@ class CepnayaMolniay(Molniya):
         self.update_slovar(1)
         self.update_radius_position()
 
-        self.kd_timer()
+        self.kd_timer1()
 
         if self.action:
             spisok_rast = []
@@ -618,7 +588,7 @@ class GnevTora(Molniya):
         self.s_kd = self.timer_for_s_kd
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.action and not self.kd:
+        if self.action and not self.s_kd > self.timer_for_s_kd:
             arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 250, MOL_BLUE)
             arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 150, arcade.color.WHITE)
 
@@ -627,7 +597,7 @@ class GnevTora(Molniya):
         self.update_slovar(1)
         self.update_radius_position()
 
-        self.kd_timer()
+        self.kd_timer1()
 
         for sprite in self.sprite_list:
             if self.radius.check_collision(sprite) and self.action:
@@ -652,7 +622,7 @@ class StreliPeruna(Molniya):
         self.update_radius_position()
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer1()
 
         if self.action and self.radius.check_collision(sprite_list=self.sprite_list):
             spis_pos = []
@@ -716,7 +686,7 @@ class SharMolniay(Molniya):
         self.baf_uron = 1
 
         self.s_zaryad = 0
-        self.timer_for_s_kd = S_KD_SHAR_MOLNII
+        self.timer_for_s_kd = S_KD_SHAR_MOL
         self.s_kd = self.timer_for_s_kd + 1
         self.s_do_promah = 0
         self.s_change_x = 0
@@ -741,14 +711,14 @@ class SharMolniay(Molniya):
             self.action = False
             self.zaryad_b = True
             self.s_zaryad += 1
-            if self.s_zaryad <= MAX_BAF_S_ZARYAD:
-                self.scale += 0.05 / MAX_BAF_S_ZARYAD
-                self.baf_uron += BAF_URON / MAX_BAF_S_ZARYAD
+            if self.s_zaryad <= MAX_BAF_S_ZARYAD_SHAR_MOL:
+                self.scale += 0.05 / MAX_BAF_S_ZARYAD_SHAR_MOL
+                self.baf_uron += BAF_URON_SHAR_MOL / MAX_BAF_S_ZARYAD_SHAR_MOL
 
-        if self.s_zaryad > MAX_S_ZARYAD:
+        if self.s_zaryad > MAX_S_ZARYAD_SHAR_MOL:
             self.vzriv = True
             self.atak = True
-            self.pers.hp -= uron * VZRIV_BAF_URON * round(self.baf_uron, 2)
+            self.pers.hp -= uron * VZRIV_BAF_URON_SHAR_MOL * round(self.baf_uron)
             self.radius1.scale = self.scale * 1.5
             for sprite in self.sprite_list:
                 if self.radius1.check_collision(sprite):
@@ -756,7 +726,7 @@ class SharMolniay(Molniya):
                     for i in self.slovar:
                         if sprite == i and not self.slovar[i]:
                             self.slovar[i] = True
-                            sprite.hp -= uron * VZRIV_BAF_URON * round(self.baf_uron, 2)
+                            sprite.hp -= uron * VZRIV_BAF_URON_SHAR_MOL * round(self.baf_uron)
             self.s_zaryad = 0
             self.zaryad = False
             self.s_kd = 0
@@ -782,9 +752,9 @@ class SharMolniay(Molniya):
                         for i in self.slovar:
                             if sprite == i and not self.slovar[i]:
                                 self.slovar[i] = True
-                                sprite.hp -= uron * round(self.baf_uron, 2)
+                                sprite.hp -= uron * round(self.baf_uron)
 
-            if self.s_do_promah >= S_DO_PROMAH:
+            if self.s_do_promah >= S_DO_PROMAH_SHAR_MOL:
                 self.promah = True
                 self.action = False
                 self.atak = True
@@ -793,7 +763,7 @@ class SharMolniay(Molniya):
                         for i in self.slovar:
                             if sprite == i and not self.slovar[i]:
                                 self.slovar[i] = True
-                                sprite.hp -= uron * round(self.baf_uron, 2) / PROMAH_DEBAF_URON
+                                sprite.hp -= uron * round(self.baf_uron) / PROMAH_DEBAF_URON_SHAR_MOL
 
         elif not self.action and not self.atak:
             self.s_do_promah = 0
@@ -847,9 +817,9 @@ class SharMolniay(Molniya):
                             if sprite == i and not self.slovar[i]:
                                 self.slovar[i] = True
                                 if self.vzriv:
-                                    sprite.hp -= uron1 * VZRIV_BAF_URON * round(self.baf_uron, 2)
+                                    sprite.hp -= uron1 * VZRIV_BAF_URON_SHAR_MOL * round(self.baf_uron, 2)
                                 elif self.promah:
-                                    sprite.hp -= uron1 * round(self.baf_uron, 2) / PROMAH_DEBAF_URON
+                                    sprite.hp -= uron1 * round(self.baf_uron, 2) / PROMAH_DEBAF_URON_SHAR_MOL
                                 else:
                                     sprite.hp -= uron1 * round(self.baf_uron, 2)
                 spisok_rast.remove(spisok_rast[min_index])
@@ -863,35 +833,65 @@ class UdarZevsa(Molniya):
         self.uron = URON_UDAR_ZEVSA
 
         self.timer_for_s_kd = S_KD_UDAR_ZEVSA
-        self.kd = self.timer_for_s_kd + 5
+        self.s_kd = self.timer_for_s_kd + 5
 
-        self.timer_for_s = 300
+        self.timer_for_s = S_UDAR_ZEVSA
 
         self.radius = hit_box_and_radius.Radius(1.5)
+
+        self.rast = 0
+        self.slovar_rast = {}
+        self.s1 = 0
+        self.line_width = 15
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_position()
         self.update_radius_position()
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer0()
 
         if self.action:
+            self.s1 = 1
             if self.s % 30 == 0:
-                self.update_slovar(2)
+                self.timer_for_s_kd += 30
+                self.uron *= BAF_URON_UDAR_ZEVSA
+                self.line_width *= 1.1
+                for i in self.slovar:
+                    self.slovar[i] = False
 
-            for sprite in self.sprite_list:
-                if self.radius.check_collision(sprite):
+            if len(self.slovar_rast) == 0:
+                for sprite in self.sprite_list:
+                    if self.radius.check_collision(sprite):
+                        rast_x = abs(sprite.center_x - self.pers.center_x)
+                        rast_y = abs(sprite.center_y - self.pers.center_y)
+                        rast = math.hypot(rast_x, rast_y)
+                        self.slovar_rast.update({sprite: rast})
+
+            self.rast = min(self.slovar_rast.values())
+            for sprite in self.slovar_rast:
+                if self.slovar_rast[sprite] == self.rast:
                     self.udar(sprite)
-                    break
+        else:
+            if self.s1 == 1:
+                self.s_kd = 0
+                self.s1 -= 1
+            if self.s_kd > self.timer_for_s_kd:
+                self.timer_for_s_kd = S_KD_UDAR_ZEVSA
+            self.rast = 0
+            self.slovar_rast.clear()
+            self.uron = URON_UDAR_ZEVSA
+            self.line_width = 15
 
         self.update_slovar(2)
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         if self.action:
-            for sprite in self.sprite_list:
-                arcade.draw_line(self.pers.center_x, self.pers.center_y, sprite.center_x, sprite.center_y, MOL_BLUE, 15)
-                break
+            for sprite in self.slovar_rast:
+                if self.slovar_rast[sprite] == self.rast:
+                    arcade.draw_line(self.pers.center_x, self.pers.center_y, sprite.center_x, sprite.center_y,
+                                     MOL_BLUE, self.line_width)
+                    break
 
 
 # Стихия ветра
@@ -1075,7 +1075,7 @@ class Mech(ColdOruzhie):
     def on_update(self, delta_time: float = 1 / 60):
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer0()
 
         if self.action:
             for sprite in self.sprite_list:
@@ -1123,7 +1123,7 @@ class DvuruchMech(ColdOruzhie):
 
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer0()
 
         if self.kombo and self.pers.rivok:
             self.probit_block = True
@@ -1166,7 +1166,7 @@ class Shchit(Zashchita):
 
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer0()
 
         self.center_y = self.pers.center_y
         if not self.action:
@@ -1211,7 +1211,7 @@ class Vila(ColdOruzhie):
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_slovar(1)
 
-        self.kd_timer()
+        self.kd_timer0()
 
         if self.action:
             if self.pers.storona == 0:
@@ -1259,7 +1259,7 @@ class Topor(ColdOruzhie):
         self.update_slovar(1)
         self.update_position()
 
-        self.kd_timer()
+        self.kd_timer0()
 
         if self.action:
             if 10 <= self.s < 20: #self.timer_for_s - self.timer_for_s // 3

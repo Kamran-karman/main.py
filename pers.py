@@ -10,21 +10,31 @@ D_ZONE = 0.005
 
 # ___Vrag___
 HP_BETA_BALVANCHIK = 10000
+# ______________________
+
 
 # ___Voin_Innocentii___
 HP_V_I = 1000
 REAKCIYA_V_I = 65
+# ______________________
+
 
 # ___Gromila___
 HP_GROMILA = 2000
-
 URON_GROMILA = 100
-
 REAKCIYA_GROMILA = 10
+# ______________________
+
 
 # ___ZhitelInnocentii___
 HP_ZHITEL_IN = 500
 REAKCIYA_ZHITEL_IN = 20
+# ______________________
+
+
+# ___Brend___
+HP_BREND = 1000
+REAKCIYA_BREND = 70
 
 
 class Pers(arcade.Sprite):
@@ -158,13 +168,11 @@ class Voyslav(Pers):
         self.pers = 'igrok'
 
         self.hp = 1000
-
         self.reakciya = 990
 
         self.scale = 1
 
-        main_patch = (":resources:images/animated_characters/male_adventurer/maleAdventurer")
-
+        main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
         self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
         self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
         self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
@@ -323,7 +331,7 @@ class BetaMaster(Pers):
 
 
 class Vrag(Pers):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0, 0), kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=0, kast_scena=False):
         super().__init__(sprite_list)
         self.force_x = 0
         self.force_y = 0
@@ -417,8 +425,7 @@ class Vrag(Pers):
                 self.udar.action = False
         elif len(self.sposob_list) > 0:
             for oruzh in self.sposob_list:
-                if (self.radius_ataki.check_collision(self.igrok) and oruzh.tip // 100 == self.tip[0] and
-                        oruzh.tip % 10 == self.tip[1]):
+                if self.radius_ataki.check_collision(self.igrok) and oruzh.tip == self.tip:
                     oruzh.action = True
                 else:
                     oruzh.action = False
@@ -436,7 +443,7 @@ class Vrag(Pers):
     def oruzh_update_animation(self):
         if len(self.sposob_list) > 0:
             for oruzh in self.sposob_list:
-                if oruzh.tip // 100 == self.tip[0] and oruzh.tip % 10 == self.tip[1]:
+                if oruzh.tip == self.tip:
                     if oruzh.action:
                         oruzh.draw()
                     oruzh.update_animation()
@@ -497,14 +504,6 @@ class BetaBalvanchik(Vrag):
 
     def update_animation(self, delta_time: float = 1 / 60):
         self.oruzh_update_animation()
-
-    def return_force(self, xy=str()):
-        if not self.is_on_ground:
-            self.force_y = 0
-        if xy == 'x':
-            return self.force_x
-        if xy == 'y':
-            return self.force_y
 
 
 class VoinInnocentii(Vrag):
@@ -595,7 +594,7 @@ class VoinInnocentii(Vrag):
 
 
 class Gromila(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=0, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_GROMILA
         self.uron = URON_GROMILA
@@ -640,8 +639,6 @@ class Gromila(Vrag):
             if self.tipo_return:
                 return
             self.walk_animation()
-            if self.tipo_return:
-                return
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_hp()
@@ -703,3 +700,56 @@ class ZhitelInnocentii(Vrag):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.oruzh_update_animation()
+
+
+class Brend(Vrag):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=206, kast_scena=False):
+        super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
+        self.hp = HP_BREND
+        self.reakciya = REAKCIYA_BREND
+
+        main_patch = ':resources:images/animated_characters/male_adventurer/maleAdventurer'
+        self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
+        self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
+        self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/udar2.png')
+        self.scale = 1.05
+
+        for i in range(8):
+            tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
+            self.walk_t.append(tex)
+        self.texture = self.idle_texture[self.storona]
+
+        self.mech_Brenda = sposob.MechBrenda(self, self.igrok_list, 20, 15)
+        self.sposob_list.append(self.mech_Brenda)
+
+        self.pers = 'Brend'
+
+    def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        self.tipo_return = False
+
+        if not self.smert:
+            self.ii(dx, physics_engine)
+
+            self.block_func()
+            if self.tipo_return:
+                return
+            self.udar_func()
+            if self.tipo_return:
+                return
+
+            self.jump_animation(dy)
+            if self.tipo_return:
+                return
+            self.idle_animation(dx)
+            if self.tipo_return:
+                return
+            self.walk_animation()
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.update_hp()
+        self.update_udar()
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.oruzh_update_animation()
+        self.mech_Brenda.draw_hit_box()

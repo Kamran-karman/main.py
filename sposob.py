@@ -15,6 +15,7 @@ MECH = 201
 DVURUCH_MECH = 202
 VILA = 204
 TOPOR = 205
+MECH_BRENDA = 206
 
 DAL_ORUZH = 300
 
@@ -79,6 +80,10 @@ URON_VILA = 30
 # ___Topor___
 URON_TOPOR = 40
 # ______________________
+
+
+# ___MechBrenda___
+URON_MECH_BRENDA = 150
 
 
 class Sposob(arcade.Sprite):
@@ -1145,6 +1150,7 @@ class DvuruchMech(ColdOruzhie):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.update_storona()
+        self.draw_hit_box()
 
 
 class Shchit(Zashchita):
@@ -1262,7 +1268,7 @@ class Topor(ColdOruzhie):
         self.kd_timer0()
 
         if self.action:
-            if 10 <= self.s < 20: #self.timer_for_s - self.timer_for_s // 3
+            if 10 <= self.s < 20:
                 self.change_angle = - 12
             else:
                 self.change_angle = 0
@@ -1271,6 +1277,40 @@ class Topor(ColdOruzhie):
                     self.udar_and_block(sprite)
         else:
             self.angle = 10
+
+        self.update_slovar(2)
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.update_storona()
+
+
+class MechBrenda(ColdOruzhie):
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
+        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+        self.tip = MECH_BRENDA
+        self.uron = URON_MECH_BRENDA
+
+        self.udar_texture0 = arcade.load_texture_pair('nuzhno/mech_Brenda0.png')
+        self.udar_texture1 = arcade.load_texture_pair('nuzhno/mech_Brenda1.png')
+        self.texture = self.udar_texture0[0]
+        self.scale = 3
+
+        self.s_kd = self.timer_for_s_kd + 5
+
+    def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.update_slovar(1)
+
+        self.kd_timer0()
+
+        if self.action:
+            for sprite in self.sprite_list:
+                if arcade.check_for_collision(self, sprite):
+                    self.udar_and_block(sprite)
+
+        if self.pers.storona == 0:
+            self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
+        elif self.pers.storona == 1:
+            self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
 
         self.update_slovar(2)
 

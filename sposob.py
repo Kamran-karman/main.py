@@ -111,9 +111,9 @@ class Block(Sposob):
         self.s_avto_block = 0
         self.timer_for_s_ab = 30
 
-        self.force = 0
-
     def block_func(self, sprite1):
+        if sprite1.storona == self.pers.storona:
+            return False
         r = 10
         for sprite in self.sprite_list:
             if sprite == sprite1:
@@ -310,7 +310,9 @@ class Zashchita(Fight):
         self.block_texture = None
 
         self.block = Block(pers, sprite_list)
-        self.sila = False
+
+        self.force = 0
+        self.s_return_force = 0
 
     def udar_or_block_animation(self):
         if self.action:
@@ -332,6 +334,20 @@ class Zashchita(Fight):
             if not self.block.block_func(sprite) and i == sprite and not self.slovar[i]:
                 self.slovar[i] = True
                 sprite.hp -= self.uron
+
+    def return_force(self, fizika):
+        self.force = 1000
+        self.s_return_force += 1
+        if self.s_return_force > 7:
+            return
+        for sprite in self.sprite_list:
+            for sposob in sprite.oruzh_list:
+                if arcade.check_for_collision(sposob, self.pers) and (self.block.block or self.block.avto_block):
+                    if self.pers.storona == 0:
+                        fizika.apply_force(self.pers, (-self.force, 0))
+                    elif self.pers.storona == 1:
+                        fizika.apply_force(self.pers, (self.force, 0))
+                    fizika.set_friction(self.pers, 1)
 
 
 class Molniya(Stihiya):
@@ -386,16 +402,21 @@ class Rivok(Mobilnost):
             self.action = False
             self.s = 0
 
-        if self.pers.storona == 0 and self.action:
+        if self.s <= 120 and self.action:
+            self.pers.kast_scena = True
+        else:
+            self.pers.kast_scena = False
+
+        if self.pers.storona == 0 and self.action and self.s > 120:
             self.change_x = 50
             self.stop1 = False
-        elif self.pers.storona == 1 and self.action:
+        elif self.pers.storona == 1 and self.action and self.s > 120:
             self.change_x = -50
             self.stop1 = False
 
         if self.action:
             self.s += 1
-        if self.s > 20:
+        if self.s > 130:
             self.s_kd = 0
             self.change_x = 0
             self.stop1 = True
@@ -466,6 +487,8 @@ class CepnayaMolniay(Molniya):
 
         self.timer_for_s_kd = 300
         self.s_kd = self.timer_for_s_kd
+
+        self.tp = False
 
     def update_animation(self, delta_time: float = 1 / 60):
         self.update_position()
@@ -575,10 +598,15 @@ class CepnayaMolniay(Molniya):
                                 radius.position = enx, eny
                     w += 1
 
+        if self.s == 1:
+            self.tp = True
+        else:
+            self.tp = False
         self.update_slovar(2)
 
     def return_position(self):
-        return (self.en_x, self.en_y)
+        if self.tp:
+            return self.en_x, self.en_y
 
 
 class GnevTora(Molniya):
@@ -1115,7 +1143,7 @@ class DvuruchMech(ColdOruzhie):
         self.probit_block = False
         self.s_probit_block = 0
         self.kombo = False
-        for oruzh in self.pers.sposob_list:
+        for oruzh in self.pers.oruzh_list:
             if oruzh.tip % 10:
                 self.kombo = True
 
@@ -1150,7 +1178,6 @@ class DvuruchMech(ColdOruzhie):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.update_storona()
-        self.draw_hit_box()
 
 
 class Shchit(Zashchita):
@@ -1293,7 +1320,6 @@ class MechBrenda(ColdOruzhie):
         self.udar_texture0 = arcade.load_texture_pair('nuzhno/mech_Brenda0.png')
         self.udar_texture1 = arcade.load_texture_pair('nuzhno/mech_Brenda1.png')
         self.texture = self.udar_texture0[0]
-        self.scale = 3
 
         self.s_kd = self.timer_for_s_kd + 5
 
@@ -1301,6 +1327,9 @@ class MechBrenda(ColdOruzhie):
         self.update_slovar(1)
 
         self.kd_timer0()
+        if self.s % 4 == 0:
+            for i in self.slovar:
+                self.slovar[i] = False
 
         if self.action:
             for sprite in self.sprite_list:

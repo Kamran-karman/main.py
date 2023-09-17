@@ -96,18 +96,22 @@ class Pers(arcade.Sprite):
             self.h = self.hp
 
     def update_storona(self, dx, physics_engine):
-        if dx < -D_ZONE and self.storona == 0 and not (self.block.block or self.block.avto_block):
-            self.storona = 1
-        elif dx > D_ZONE and self.storona == 1 and not (self.block.block or self.block.avto_block):
-            self.storona = 0
+        rf = False
+        for block in self.block_list:
+            if block.rf:
+                rf = True
+        if not rf:
+            if dx < -D_ZONE and self.storona == 0:
+                self.storona = 1
+            elif dx > D_ZONE and self.storona == 1:
+                self.storona = 0
 
-        for sprite in self.sprite_list:
-            if self.kvadrat_radius.check_collision(sprite) and abs(dx) < D_ZONE and not (self.block.block
-                                                                                         or self.block.avto_block):
-                if self.center_x > sprite.center_x:
-                    self.storona = 1
-                elif self.center_x < sprite.center_x:
-                    self.storona = 0
+            for sprite in self.sprite_list:
+                if self.kvadrat_radius.check_collision(sprite) and abs(dx) < D_ZONE:
+                    if self.center_x > sprite.center_x:
+                        self.storona = 1
+                    elif self.center_x < sprite.center_x:
+                        self.storona = 0
 
         self.is_on_ground = physics_engine.is_on_ground(self)
 
@@ -166,7 +170,7 @@ class Pers(arcade.Sprite):
 
 
 class Voyslav(Pers):
-    def __init__(self, sprite_list):
+    def __init__(self, sprite_list, fizika):
         super().__init__(sprite_list)
         self.pers = 'igrok'
 
@@ -186,7 +190,9 @@ class Voyslav(Pers):
             self.walk_t.append(tex)
         self.texture = self.idle_texture[0]
 
-        self.shchit = sposob.Shchit(self, self.sprite_list, 15, 5)
+        self.fizika = fizika
+
+        self.shchit = sposob.Shchit(self, self.sprite_list, 15, 5, self.fizika)
         self.block_list.append(self.shchit)
         self.oruzh_list.append(self.shchit)
 
@@ -219,6 +225,7 @@ class Voyslav(Pers):
         self.update_hp()
         self.update_kvadrat_radius()
 
+        self.shchit.fizika = self.fizika
         self.shchit.on_update()
 
         self.gnev_Tora.on_update()
@@ -242,7 +249,7 @@ class Voyslav(Pers):
 
 
 class BetaMaster(Pers):
-    def __init__(self, sprite_list):
+    def __init__(self, sprite_list, fizika):
         super().__init__(sprite_list)
         self.hp = 10000
 
@@ -264,7 +271,7 @@ class BetaMaster(Pers):
             self.walk_t.append(tex)
         self.texture = self.idle_texture[0]
 
-        self.shchit = sposob.Shchit(self, self.sprite_list, 10, 10)
+        self.shchit = sposob.Shchit(self, self.sprite_list, 10, 10, fizika)
         self.oruzh_list.append(self.shchit)
 
         self.mech = sposob.Mech(self, self.sprite_list, 10, 5)
@@ -454,7 +461,7 @@ class Vrag(Pers):
 
 
 class BetaBalvanchik(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=0, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.pers = 'betabalvanchik'
 
@@ -507,7 +514,7 @@ class BetaBalvanchik(Vrag):
 
 
 class VoinInnocentii(Vrag):
-    def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
+    def __init__(self, igrok, sprite_list, v_drug_list, tip=0, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
 
         self.hp = HP_V_I

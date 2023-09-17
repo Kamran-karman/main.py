@@ -97,7 +97,7 @@ class Igra1GlavaViev(arcade.View):
 
         self.zhivie_vrag_list = arcade.SpriteList()
 
-        self.igrok = pers.Voyslav(self.vrag_list)
+        self.igrok = pers.Voyslav(self.vrag_list, self.fizika)
         self.igrok.position = IGROK_POSITION
 
         for x in range(200, 400, 100):
@@ -149,6 +149,8 @@ class Igra1GlavaViev(arcade.View):
             self.fizika.add_sprite(vrag, 2, 1, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
                                    max_horizontal_velocity=200,
                                    moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
+
+        self.igrok.fizika = self.fizika
 
     def on_draw(self):
         self.kamera.use()
@@ -215,7 +217,7 @@ class Igra1GlavaViev(arcade.View):
         else:
             self.fizika.set_friction(self.igrok, 1)
 
-        self.igrok.shchit.return_force(self.fizika)
+        #self.igrok.shchit.return_force(self.fizika)
 
         if self.igrok.molniya.tp:
             self.s1 += 1

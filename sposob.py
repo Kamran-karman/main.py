@@ -28,7 +28,7 @@ UDAR_ZEVSA = 405
 
 FIZ_SPOSOB = 500
 UDAR = 501
-RIVOK = 501
+RIVOK = 502
 
 
 # ___SharMolniay___
@@ -245,8 +245,8 @@ class ColdOruzhie(Fight):
         self.timer_for_s = timer_for_s
         self.timer_for_s_kd = timer_for_s_kd
 
-        self.udar_texture0 = None
-        self.udar_texture1 = None
+        self.udar_texture = None
+        self.texture_invers = None
 
         self.block = Block(pers, sprite_list)
 
@@ -258,9 +258,9 @@ class ColdOruzhie(Fight):
 
     def update_storona(self):
         if self.pers.storona == 0:
-            self.texture = self.udar_texture0[0]
+            self.texture = self.udar_texture[0]
         else:
-            self.texture = self.udar_texture1[0]
+            self.texture_invers.draw()
 
 
 class FizSposobFight(Fight):
@@ -300,7 +300,7 @@ class Stihiya(Fight):
 
 
 class Zashchita(Fight):
-    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd, fizika):
         super().__init__(pers, sprite_list)
 
         self.timer_for_s = timer_for_s
@@ -313,6 +313,11 @@ class Zashchita(Fight):
 
         self.force = 0
         self.s_return_force = 0
+        self.rf = False
+
+        self.fizika = fizika
+
+        self.sposob_list = arcade.SpriteList()
 
     def udar_or_block_animation(self):
         if self.action:
@@ -336,18 +341,28 @@ class Zashchita(Fight):
                 sprite.hp -= self.uron
 
     def return_force(self, fizika):
-        self.force = 1000
-        self.s_return_force += 1
-        if self.s_return_force > 7:
-            return
+        self.force = 2500
+        if not self.rf:
+            self.s_return_force = 0
+        else:
+            self.s_return_force += 1
         for sprite in self.sprite_list:
             for sposob in sprite.oruzh_list:
-                if arcade.check_for_collision(sposob, self.pers) and (self.block.block or self.block.avto_block):
+                if (arcade.check_for_collision(sposob, self) and (self.block.block or self.block.avto_block)
+                        and sposob.action and self.s_return_force <= 2):
+                    self.rf = True
                     if self.pers.storona == 0:
                         fizika.apply_force(self.pers, (-self.force, 0))
                     elif self.pers.storona == 1:
                         fizika.apply_force(self.pers, (self.force, 0))
                     fizika.set_friction(self.pers, 1)
+                    if sposob not in self.sposob_list:
+                        self.sposob_list.append(sposob)
+            for sposob1 in self.sposob_list:
+                if not self.block.avto_block and not sposob1.action:
+                    self.rf = False
+                    self.sposob_list.remove(sposob1)
+                    print(1)
 
 
 class Molniya(Stihiya):
@@ -621,7 +636,7 @@ class GnevTora(Molniya):
         self.s_kd = self.timer_for_s_kd
 
     def update_animation(self, delta_time: float = 1 / 60):
-        if self.action and not self.s_kd > self.timer_for_s_kd:
+        if self.action and self.s <= self.timer_for_s:
             arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 250, MOL_BLUE)
             arcade.draw_circle_filled(self.pers.position[0], self.pers.position[1], 150, arcade.color.WHITE)
 
@@ -1098,9 +1113,9 @@ class Mech(ColdOruzhie):
         self.tip = MECH
         self.uron = 50
 
-        self.udar_texture0 = arcade.load_texture_pair('nuzhno/udar.png')
-        self.udar_texture1 = arcade.load_texture_pair('nuzhno/udar1.png')
-        self.texture = self.udar_texture0[1]
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar.png')
+        self.texture_invers = Invers(self.udar_texture[1])
+        self.texture = self.udar_texture[0]
         self.scale = 1.5
 
         self.s_kd = self.timer_for_s_kd + 5
@@ -1133,9 +1148,9 @@ class DvuruchMech(ColdOruzhie):
 
         self.uron = URON_DVURUCH_MECH
 
-        self.udar_texture0 = arcade.load_texture_pair('nuzhno/udar.png')
-        self.udar_texture1 = arcade.load_texture_pair('nuzhno/udar1.png')
-        self.texture = self.udar_texture0[1]
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar.png')
+        self.udar_texture1 = arcade.Sprite('nuzhno/udar1.png')
+        self.texture = self.udar_texture[0]
         self.scale = 2
 
         self.s_kd = self.timer_for_s_kd + 5
@@ -1144,7 +1159,7 @@ class DvuruchMech(ColdOruzhie):
         self.s_probit_block = 0
         self.kombo = False
         for oruzh in self.pers.oruzh_list:
-            if oruzh.tip % 10:
+            if oruzh.tip == 502:
                 self.kombo = True
 
     def on_update(self, delta_time: float = 1 / 60):
@@ -1171,18 +1186,21 @@ class DvuruchMech(ColdOruzhie):
 
         self.update_slovar(2)
 
-        if self.pers.storona == 0:
-            self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
-        elif self.pers.storona == 1:
-            self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
+        self.position = self.pers.position
+        self.udar_texture1.position = self.pers.position
+
+        # if self.pers.storona == 0:
+        #     self.left, self.bottom = self.pers.center_x, self.pers.center_y - 40
+        # elif self.pers.storona == 1:
+        #     self.right, self.bottom = self.pers.center_x, self.pers.center_y - 40
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.update_storona()
 
 
 class Shchit(Zashchita):
-    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd):
-        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd)
+    def __init__(self, pers, sprite_list, timer_for_s, timer_for_s_kd, fizika):
+        super().__init__(pers, sprite_list, timer_for_s, timer_for_s_kd, fizika)
         self.tip = SHCHIT
         self.uron = URON_SHCHIT
 
@@ -1192,6 +1210,8 @@ class Shchit(Zashchita):
         self.texture = self.block_texture[1]
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
+        self.return_force(self.fizika)
+
         if self.pers.block.block:
             self.block.block = True
         else:
@@ -1227,6 +1247,7 @@ class Shchit(Zashchita):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.udar_or_block_animation()
+        self.draw_hit_box()
         
 
 class Vila(ColdOruzhie):
@@ -1237,9 +1258,9 @@ class Vila(ColdOruzhie):
 
         self.s_kd = self.timer_for_s_kd + 5
 
-        self.udar_texture0 = arcade.load_texture_pair('nuzhno/vila.png')
-        self.udar_texture1 = arcade.load_texture_pair('nuzhno/vila.png')
-        self.texture = self.udar_texture1[1]
+        self.udar_texture = arcade.load_texture_pair('nuzhno/vila.png')
+        self.texture_invers = Invers(self.udar_texture[1])
+        self.texture = self.udar_texture[0]
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.update_slovar(1)
@@ -1283,9 +1304,9 @@ class Topor(ColdOruzhie):
 
         self.s_kd = self.timer_for_s_kd + 5
 
-        self.udar_texture0 = arcade.load_texture_pair('nuzhno/topor0.png')
-        self.udar_texture1 = arcade.load_texture_pair('nuzhno/topor1.png')
-        self.texture = self.udar_texture0[0]
+        self.udar_texture = arcade.load_texture_pair('nuzhno/topor0.png')
+        self.texture_invers = Invers(self.udar_texture[1])
+        self.texture = self.udar_texture[0]
         self.angle = 10
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
@@ -1296,7 +1317,10 @@ class Topor(ColdOruzhie):
 
         if self.action:
             if 10 <= self.s < 20:
-                self.change_angle = - 12
+                if self.pers.storona == 1:
+                    self.change_angle = -12
+                else:
+                    self.change_angle = 12
             else:
                 self.change_angle = 0
             for sprite in self.sprite_list:
@@ -1317,9 +1341,9 @@ class MechBrenda(ColdOruzhie):
         self.tip = MECH_BRENDA
         self.uron = URON_MECH_BRENDA
 
-        self.udar_texture0 = arcade.load_texture_pair('nuzhno/mech_Brenda0.png')
-        self.udar_texture1 = arcade.load_texture_pair('nuzhno/mech_Brenda1.png')
-        self.texture = self.udar_texture0[0]
+        self.udar_texture = arcade.load_texture_pair('nuzhno/mech_Brenda0.png')
+        self.texture_invers = Invers(self.udar_texture[1])
+        self.texture = self.udar_texture[0]
 
         self.s_kd = self.timer_for_s_kd + 5
 
@@ -1345,3 +1369,10 @@ class MechBrenda(ColdOruzhie):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.update_storona()
+
+
+class Invers(arcade.Sprite):
+    def __init__(self, texture):
+        super().__init__()
+        self.texture_ivers = texture
+        self.texture = self.texture_ivers

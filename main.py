@@ -36,12 +36,6 @@ class Igra1GlavaViev(arcade.View):
         super().__init__()
         arcade.set_background_color((255, 182, 193, 255))
 
-        # Переменные для частиц
-        self.chasti_list = []
-        self.program = self.window.ctx.load_program(vertex_shader='shederi_igra/ver_shad_tl_ogon.glsl',
-                                                    fragment_shader='shederi_igra/frag_shad_tl_ogon.glsl')
-        self.window.ctx.enable_only(self.window.ctx.BLEND)
-
         self.igrok = None
         self.brend = None
 
@@ -67,7 +61,7 @@ class Igra1GlavaViev(arcade.View):
         self.s = 0
         self.s1 = 0
 
-        self.t_main_patch = (':resources:images/tiles/')
+        self.t_main_patch = ':resources:images/tiles/'
 
     def setup(self):
         self.kamera = arcade.Camera()
@@ -153,21 +147,20 @@ class Igra1GlavaViev(arcade.View):
         self.igrok.fizika = self.fizika
 
     def on_draw(self):
-        self.kamera.use()
-        self.center_kamera_za_igrok()
         self.clear()
 
         self.smert_list1.draw()
         for vrag in self.zhivie_vrag_list:
             vrag.draw()
             vrag.update_animation()
-            vrag.draw_hit_box()
         self.igrok.draw()
         self.igrok.update_animation()
-        self.igrok.draw_hit_box()
         self.smert_list2.draw()
 
         self.walls_list.draw()
+
+        self.kamera.use()
+        self.center_kamera_za_igrok()
 
     def on_update(self, delta_time: float):
         self.igrok.on_update()
@@ -217,9 +210,7 @@ class Igra1GlavaViev(arcade.View):
         else:
             self.fizika.set_friction(self.igrok, 1)
 
-        #self.igrok.shchit.return_force(self.fizika)
-
-        if self.igrok.molniya.tp:
+        if self.igrok.molniya.tp and self.s1 == 0:
             self.s1 += 1
             poz = self.igrok.molniya.return_position()
             self.fizika.set_position(self.igrok, poz)

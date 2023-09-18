@@ -8,19 +8,30 @@ KOOR_X = 100
 KOOR_Y = 500
 D_ZONE = 0.005
 
-# ___Vrag___
+# ___Voyslav___
+HP_VOYSLAV = 1500
+MANA_VOYSLAV = 300
+STAMINA_VOYSLAV = 200
+
+
+# ___Balvanchik___
 HP_BETA_BALVANCHIK = 10000
+MANA_BETA_BALVANCHIK = 300
+STAMINA_BETA_BALVANCHIK = 300
 # ______________________
 
 
 # ___Voin_Innocentii___
 HP_V_I = 1000
+MANA_V_I = 100
+STAMINA_V_I = 100
 REAKCIYA_V_I = 65
 # ______________________
 
 
 # ___Gromila___
 HP_GROMILA = 2000
+STAMINA_GROMILA = 100
 URON_GROMILA = 100
 REAKCIYA_GROMILA = 10
 # ______________________
@@ -28,12 +39,14 @@ REAKCIYA_GROMILA = 10
 
 # ___ZhitelInnocentii___
 HP_ZHITEL_IN = 500
+STAMINA_ZHITEL_IN = 30
 REAKCIYA_ZHITEL_IN = 20
 # ______________________
 
 
 # ___Brend___
 HP_BREND = 1000
+STAMINA_BREND = 200
 REAKCIYA_BREND = 70
 
 
@@ -42,8 +55,15 @@ class Pers(arcade.Sprite):
         super().__init__()
         self.sprite_list = sprite_list
 
-        self.hp = 0
-        self.h = self.hp
+        self.max_hp = 0
+        self.hp = self.max_hp
+        self.hp_print = self.hp
+        self.max_mana = 0
+        self.mana = self.max_mana
+        self.mana_print = self.mana
+        self.max_stamina = 0
+        self.stamina = self.max_stamina
+        self.stamina_print = self.stamina
         self.smert = False
         self.minus_hp = False
 
@@ -74,26 +94,46 @@ class Pers(arcade.Sprite):
         self.kvadrat_radius = hit_box_and_radius.KvadratRadius(self.scale)
 
         self.oruzh_list = arcade.SpriteList()
-
         self.block_list = arcade.SpriteList()
 
         self.pers = ''
 
         self.return_position = True
-
         self.tipo_return = False
 
-    def update_hp(self):
-        if self.hp >= self.h:
+    def update_harakteristiki(self):
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+        if self.hp >= self.hp_print:
             self.minus_hp = False
         if self.hp < 0:
             self.smert = True
-        elif self.hp < self.h:
-            self.h = self.hp
-            print(f'{self.pers}:', self.hp)
+        elif self.hp < self.hp_print:
+            self.hp_print = self.hp
+            print(f'{self.pers} hp:', self.hp)
             self.minus_hp = True
-        elif self.hp > self.h:
-            self.h = self.hp
+        elif self.hp > self.hp_print:
+            self.hp_print = self.hp
+
+        if self.mana < self.max_mana:
+            self.mana += 1 / 60
+        if self.mana >= self.max_mana:
+            self.mana = self.max_mana
+        if self.mana < self.mana_print:
+            self.mana_print = self.mana
+            #print(f'{self.pers} mana:', round(self.mana))
+        elif self.mana > self.mana_print:
+            self.mana_print = self.mana
+
+        if self.stamina < self.max_stamina:
+            self.stamina += 1 / 60
+        if self.stamina >= self.max_stamina:
+            self.stamina = self.max_stamina
+        if self.stamina < self.stamina_print:
+            self.stamina_print = self.stamina
+            #print(f'{self.pers} stamina:', round(self.stamina))
+        elif self.stamina > self.stamina_print:
+            self.stamina_print = self.stamina
 
     def update_storona(self, dx, physics_engine):
         rf = False
@@ -123,9 +163,6 @@ class Pers(arcade.Sprite):
         if len(self.oruzh_list) == 0:
             if self.udar.action:
                 self.tipo_return = True
-        else:
-            for oruzh in self.oruzh_list:
-                self.udar.action = oruzh.action
 
     def block_func(self):
         block = False
@@ -138,19 +175,23 @@ class Pers(arcade.Sprite):
                 block = True
         if (self.block.block or self.block.avto_block) and block:
             self.texture = self.block_texture[self.storona]
+            self.hit_box._points = self.texture.hit_box_points
 
     def idle_animation(self, dx):
         if abs(dx) < D_ZONE:
             self.texture = self.idle_texture[self.storona]
+            self.hit_box._points = self.texture.hit_box_points
             self.tipo_return = True
 
     def jump_animation(self, dy):
         if not self.is_on_ground:
             if dy > D_ZONE:
                 self.texture = self.jump_texture[self.storona]
+                self.hit_box._points = self.texture.hit_box_points
                 self.tipo_return = True
             elif dy < -D_ZONE:
                 self.texture = self.fall_texture[self.storona]
+                self.hit_box._points = self.texture.hit_box_points
                 self.tipo_return = True
 
     def walk_animation(self):
@@ -160,6 +201,7 @@ class Pers(arcade.Sprite):
             if self.sch_walk_tex > 7:
                 self.sch_walk_tex = 0
             self.texture = self.walk_t[self.sch_walk_tex][self.storona]
+            self.hit_box._points = self.texture.hit_box_points
 
     def return_position_func(self):
         return self.position
@@ -174,8 +216,12 @@ class Voyslav(Pers):
         super().__init__(sprite_list)
         self.pers = 'igrok'
 
-        self.hp = 1000000000000000
+        self.max_hp = 1500
+        self.max_mana = MANA_VOYSLAV
+        self.max_stamina = STAMINA_VOYSLAV
         self.reakciya = 990
+        self.mana = MANA_VOYSLAV
+        self.stamina = STAMINA_VOYSLAV
 
         self.scale = 1
 
@@ -222,7 +268,7 @@ class Voyslav(Pers):
             return
 
     def on_update(self, delta_time: float = 1 / 60):
-        self.update_hp()
+        self.update_harakteristiki()
         self.update_kvadrat_radius()
 
         self.shchit.fizika = self.fizika
@@ -251,7 +297,9 @@ class Voyslav(Pers):
 class BetaMaster(Pers):
     def __init__(self, sprite_list, fizika):
         super().__init__(sprite_list)
-        self.hp = 10000
+        self.max_hp = 10000
+        self.max_mana = 500
+        self.max_stamina = 500
 
         self.reakciay = 1000
 
@@ -305,7 +353,7 @@ class BetaMaster(Pers):
             return
 
     def on_update(self, delta_time: float = 1 / 60):
-        self.update_hp()
+        self.update_harakteristiki()
 
         self.update_kvadrat_radius()
 
@@ -452,7 +500,6 @@ class Vrag(Pers):
                 if oruzh.tip == self.tip:
                     if oruzh.action:
                         oruzh.draw()
-                        oruzh.draw_hit_box()
                     oruzh.update_animation()
         else:
             if self.udar.action:
@@ -465,7 +512,9 @@ class BetaBalvanchik(Vrag):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.pers = 'betabalvanchik'
 
-        self.hp = HP_BETA_BALVANCHIK
+        self.max_hp = HP_BETA_BALVANCHIK
+        self.max_mana = MANA_BETA_BALVANCHIK
+        self.max_stamina = STAMINA_BETA_BALVANCHIK
 
         self.scale = 1.2
 
@@ -506,7 +555,7 @@ class BetaBalvanchik(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60):
-        self.update_hp()
+        self.update_harakteristiki()
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60):
@@ -517,7 +566,9 @@ class VoinInnocentii(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, tip=0, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
 
-        self.hp = HP_V_I
+        self.max_hp = HP_V_I
+        self.max_mana = MANA_V_I
+        self.max_stamina = STAMINA_V_I
         self.reakciya = REAKCIYA_V_I
 
         self.rivok_distanc = 600
@@ -569,7 +620,7 @@ class VoinInnocentii(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        self.update_hp()
+        self.update_harakteristiki()
         self.rivok_sposob.update()
         self.rivok_sposob.on_update()
         self.update_udar()
@@ -603,7 +654,8 @@ class VoinInnocentii(Vrag):
 class Gromila(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, tip=0, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
-        self.hp = HP_GROMILA
+        self.max_hp = HP_GROMILA
+        self.max_stamina = STAMINA_GROMILA
         self.uron = URON_GROMILA
 
         self.sil = True
@@ -648,7 +700,7 @@ class Gromila(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        self.update_hp()
+        self.update_harakteristiki()
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
@@ -659,6 +711,7 @@ class ZhitelInnocentii(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_ZHITEL_IN
+        self.max_stamina = STAMINA_ZHITEL_IN
         self.reakciya = REAKCIYA_ZHITEL_IN
 
         self.scale = 0.9
@@ -702,7 +755,7 @@ class ZhitelInnocentii(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        self.update_hp()
+        self.update_harakteristiki()
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
@@ -713,6 +766,7 @@ class Brend(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, tip=206, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
         self.hp = HP_BREND
+        self.max_stamina = STAMINA_BREND
         self.reakciya = REAKCIYA_BREND
 
         main_patch = ':resources:images/animated_characters/male_adventurer/maleAdventurer'
@@ -754,7 +808,7 @@ class Brend(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        self.update_hp()
+        self.update_harakteristiki()
         self.update_udar()
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:

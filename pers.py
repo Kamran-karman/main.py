@@ -9,7 +9,7 @@ KOOR_Y = 500
 D_ZONE = 0.005
 
 # ___Voyslav___
-HP_VOYSLAV = 1500
+HP_VOYSLAV = 150099999999999
 MANA_VOYSLAV = 300
 STAMINA_VOYSLAV = 200
 
@@ -56,16 +56,20 @@ class Pers(arcade.Sprite):
         self.sprite_list = sprite_list
 
         self.max_hp = 0
-        self.hp = self.max_hp
-        self.hp_print = self.hp
+        self.hp = 0
+        self.hp_print = 0
         self.max_mana = 0
-        self.mana = self.max_mana
-        self.mana_print = self.mana
+        self.mana = 0
+        self.mana_print = 0
         self.max_stamina = 0
-        self.stamina = self.max_stamina
-        self.stamina_print = self.stamina
+        self.stamina = 0
+        self.stamina_print = 0
         self.smert = False
         self.minus_hp = False
+
+        self.mor = False
+        self.s_mor = 0
+        self.timer_for_s_mor = 600
 
         self.reakciya = 0
         self.block = sposob.Block(self, self.sprite_list)
@@ -106,8 +110,10 @@ class Pers(arcade.Sprite):
             self.hp = self.max_hp
         if self.hp >= self.hp_print:
             self.minus_hp = False
-        if self.hp < 0:
+        if self.hp <= 0:
             self.smert = True
+            for oruzh in self.oruzh_list:
+                oruzh.action = False
         elif self.hp < self.hp_print:
             self.hp_print = self.hp
             print(f'{self.pers} hp:', self.hp)
@@ -115,15 +121,23 @@ class Pers(arcade.Sprite):
         elif self.hp > self.hp_print:
             self.hp_print = self.hp
 
+        if self.mor:
+            self.s_mor += 1
+            if self.s_mor >= self.timer_for_s_mor:
+                self.mor = False
         if self.mana < self.max_mana:
             self.mana += 1 / 60
-        if self.mana >= self.max_mana:
+        if self.mana > self.max_mana:
             self.mana = self.max_mana
         if self.mana < self.mana_print:
             self.mana_print = self.mana
             #print(f'{self.pers} mana:', round(self.mana))
         elif self.mana > self.mana_print:
             self.mana_print = self.mana
+        if self.mana < 0:
+            self.hp -= 0.5 / 60
+            self.s_mor = 0
+            self.mor = True
 
         if self.stamina < self.max_stamina:
             self.stamina += 1 / 60
@@ -134,6 +148,11 @@ class Pers(arcade.Sprite):
             #print(f'{self.pers} stamina:', round(self.stamina))
         elif self.stamina > self.stamina_print:
             self.stamina_print = self.stamina
+
+    def harakteristiki(self):
+        self.hp = self.hp_print = self.max_hp
+        self.mana = self.mana_print = self.max_mana
+        self.stamina = self.stamina_print = self.max_stamina
 
     def update_storona(self, dx, physics_engine):
         rf = False
@@ -210,18 +229,22 @@ class Pers(arcade.Sprite):
         self.kvadrat_radius.scale = self.scale
         self.kvadrat_radius.position = self.position
 
+    def mor_func(self, force_x):
+        if self.mana < 0:
+            force_x *= 0.5
+        return force_x
+
 
 class Voyslav(Pers):
     def __init__(self, sprite_list, fizika):
         super().__init__(sprite_list)
         self.pers = 'igrok'
 
-        self.max_hp = 1500
+        self.max_hp = HP_VOYSLAV
         self.max_mana = MANA_VOYSLAV
         self.max_stamina = STAMINA_VOYSLAV
         self.reakciya = 990
-        self.mana = MANA_VOYSLAV
-        self.stamina = STAMINA_VOYSLAV
+        self.harakteristiki()
 
         self.scale = 1
 
@@ -250,6 +273,8 @@ class Voyslav(Pers):
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
+        if self.mana > self.mana_print or self.mana < self.mana_print:
+            print(self.mana)
         self.update_storona(dx, physics_engine)
 
         self.block_func()
@@ -300,6 +325,7 @@ class BetaMaster(Pers):
         self.max_hp = 10000
         self.max_mana = 500
         self.max_stamina = 500
+        self.harakteristiki()
 
         self.reakciay = 1000
 
@@ -515,6 +541,7 @@ class BetaBalvanchik(Vrag):
         self.max_hp = HP_BETA_BALVANCHIK
         self.max_mana = MANA_BETA_BALVANCHIK
         self.max_stamina = STAMINA_BETA_BALVANCHIK
+        self.harakteristiki()
 
         self.scale = 1.2
 
@@ -570,6 +597,7 @@ class VoinInnocentii(Vrag):
         self.max_mana = MANA_V_I
         self.max_stamina = STAMINA_V_I
         self.reakciya = REAKCIYA_V_I
+        self.harakteristiki()
 
         self.rivok_distanc = 600
 
@@ -657,6 +685,7 @@ class Gromila(Vrag):
         self.max_hp = HP_GROMILA
         self.max_stamina = STAMINA_GROMILA
         self.uron = URON_GROMILA
+        self.harakteristiki()
 
         self.sil = True
 
@@ -710,9 +739,10 @@ class Gromila(Vrag):
 class ZhitelInnocentii(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, tip=(0,0), kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
-        self.hp = HP_ZHITEL_IN
+        self.max_hp = HP_ZHITEL_IN
         self.max_stamina = STAMINA_ZHITEL_IN
         self.reakciya = REAKCIYA_ZHITEL_IN
+        self.harakteristiki()
 
         self.scale = 0.9
 
@@ -765,9 +795,10 @@ class ZhitelInnocentii(Vrag):
 class Brend(Vrag):
     def __init__(self, igrok, sprite_list, v_drug_list, tip=206, kast_scena=False):
         super().__init__(igrok, sprite_list, v_drug_list, tip, kast_scena)
-        self.hp = HP_BREND
+        self.max_hp = HP_BREND
         self.max_stamina = STAMINA_BREND
         self.reakciya = REAKCIYA_BREND
+        self.harakteristiki()
 
         main_patch = ':resources:images/animated_characters/male_adventurer/maleAdventurer'
         self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")

@@ -5,6 +5,8 @@ from dataclasses import dataclass
 import arcade.gl
 import pers
 
+f = 0
+
 W = 1600
 H = 900
 

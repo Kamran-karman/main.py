@@ -70,6 +70,9 @@ class Pers(arcade.Sprite):
         self.mor = False
         self.s_mor = 0
         self.timer_for_s_mor = 600
+        self.slabweak = False
+        self.s_slabweak = 0
+        self.timer_for_s_slabweak = 900
 
         self.reakciya = 0
         self.block = sposob.Block(self, self.sprite_list)
@@ -126,7 +129,10 @@ class Pers(arcade.Sprite):
             if self.s_mor >= self.timer_for_s_mor:
                 self.mor = False
         if self.mana < self.max_mana:
-            self.mana += 1 / 60
+            if not self.mor:
+                self.mana += 1 / 60
+            else:
+                self.mana += 0.5 / 60
         if self.mana > self.max_mana:
             self.mana = self.max_mana
         if self.mana < self.mana_print:
@@ -139,8 +145,15 @@ class Pers(arcade.Sprite):
             self.s_mor = 0
             self.mor = True
 
+        if self.slabweak:
+            self.s_slabweak += 1
+            if self.s_slabweak >= self.timer_for_s_slabweak:
+                self.slabweak = False
         if self.stamina < self.max_stamina:
-            self.stamina += 1 / 60
+            if not self.slabweak:
+                self.stamina += 1 / 60
+            else:
+                self.stamina += 0.2 / 60
         if self.stamina >= self.max_stamina:
             self.stamina = self.max_stamina
         if self.stamina < self.stamina_print:
@@ -148,6 +161,11 @@ class Pers(arcade.Sprite):
             #print(f'{self.pers} stamina:', round(self.stamina))
         elif self.stamina > self.stamina_print:
             self.stamina_print = self.stamina
+        if self.stamina < 0:
+            self.slabweak = True
+            self.mana -= 1
+            self.stamina += 0.5
+            self.s_slabweak = 0
 
     def harakteristiki(self):
         self.hp = self.hp_print = self.max_hp
@@ -228,11 +246,6 @@ class Pers(arcade.Sprite):
     def update_kvadrat_radius(self):
         self.kvadrat_radius.scale = self.scale
         self.kvadrat_radius.position = self.position
-
-    def mor_func(self, force_x):
-        if self.mana < 0:
-            force_x *= 0.5
-        return force_x
 
 
 class Voyslav(Pers):
@@ -648,6 +661,7 @@ class VoinInnocentii(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
+        print(self.stamina)
         self.update_harakteristiki()
         self.rivok_sposob.update()
         self.rivok_sposob.on_update()

@@ -186,6 +186,12 @@ class Mobilnost(Sposob):
         self.scale = self.pers.scale
         self.minus_stamina = 0
 
+    def stamina(self, minus_stamina):
+        if self.pers.stamina >= minus_stamina:
+            return True
+        else:
+            return False
+
 
 class Fight(Sposob):
     def __init__(self, pers, sprite_list):
@@ -425,9 +431,14 @@ class Rivok(Mobilnost):
         self.timer_for_s = 50
         self.timer_for_rivok = 30
 
+        self.minus_stamina = 25
+
     def on_update(self, delta_time: float = 1 / 60) -> None:
         self.s_kd += 1
         if self.s_kd < S_KD_RIVOK:
+            self.action = False
+
+        if not self.stamina(self.minus_stamina):
             self.action = False
 
         self.radius_stop.position = self.position
@@ -469,12 +480,15 @@ class Rivok(Mobilnost):
 
         if self.action:
             self.s += 1
+            if self.s == 1:
+                self.pers.stamina -= self.minus_stamina
         if self.s > self.timer_for_s:
             self.s_kd = 0
             self.change_x = 0
             self.stop1 = True
             self.action = False
             self.s = 0
+            self.pers.stamina -= 20
 
         self.pers.rivok = self.action
 
@@ -556,7 +570,17 @@ class CepnayaMolniay(Molniya):
 
         self.kd_timer1()
 
-        if self.action and self.mana(self.minus_mana):
+        if self.s == 1:
+            if self.mana(self.minus_mana):
+                self.pers.mana -= self.minus_mana
+                self.tp = True
+            else:
+                self.action = False
+                self.s = 0
+        else:
+            self.tp = False
+
+        if self.action:
             spisok_rast = []
             spisok_xy = []
             spisok3 = []
@@ -657,12 +681,6 @@ class CepnayaMolniay(Molniya):
                                 radius.position = enx, eny
                     w += 1
 
-        if self.s == 1:
-            self.tp = True
-            if self.mana(self.minus_mana):
-                self.pers.mana -= self.minus_mana
-        else:
-            self.tp = False
         self.update_slovar(2)
 
     def return_position(self):
@@ -991,7 +1009,6 @@ class UdarZevsa(Molniya):
                 self.pers.mana -= self.minus_mana
 
         if self.action:
-            print(1)
             self.s1 = 1
             if self.s % 30 == 0:
                 self.timer_for_s_kd += 30

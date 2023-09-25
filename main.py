@@ -203,10 +203,12 @@ class Igra1GlavaViev(arcade.View):
             force = (IGROK_MOVE_GROUND, 0)
             self.fizika.apply_force(self.igrok, force)
             self.fizika.set_friction(self.igrok, 0.5)
+            self.igrok.stamina -= 0.2 / 60
         elif not self.pravo and self.levo:
             force = (-IGROK_MOVE_GROUND, 0)
             self.fizika.apply_force(self.igrok, force)
             self.fizika.set_friction(self.igrok, 0.5)
+            self.igrok.stamina -= 0.2 / 60
         else:
             self.fizika.set_friction(self.igrok, 1)
 
@@ -249,6 +251,7 @@ class Igra1GlavaViev(arcade.View):
             if self.igrok.is_on_ground:
                 force = (0, IGROK_JUMP_FORCE)
                 self.fizika.apply_force(self.igrok, force)
+                self.igrok.stamina -= 2
 
     def on_key_release(self, _symbol: int, _modifiers: int):
         if _symbol == arcade.key.RALT:

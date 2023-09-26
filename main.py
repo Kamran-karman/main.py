@@ -14,9 +14,9 @@ IGROK_MOVE_GROUND = 10000
 MASS_IGROK = 1
 FRICTION_IGROK = 0
 IGROK_CT = 'player'
-IG_MAX_VERTICAL_SPEED = 2000
+IG_MAX_VERTICAL_SPEED = 10000
 IG_MAX_HORIZANTAL_SPEED = 350
-IGROK_JUMP_FORCE = 40000
+IGROK_JUMP_FORCE = 45000
 WALL_FRICTION = 0.8
 WALL_CT = 'wall'
 
@@ -188,8 +188,10 @@ class Igra1GlavaViev(arcade.View):
                 if abs(x) > 0:
                     self.fizika.apply_force(vrag, (x, y))
                     self.fizika.set_friction(vrag, 0.1)
+                    vrag.stamina -= 0.2 / 60
                 elif y > 0:
                     self.fizika.apply_force(vrag, (x, y))
+                    vrag.stamina -= 2 / 60
                 else:
                     self.fizika.set_friction(vrag, 1)
 

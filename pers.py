@@ -453,7 +453,6 @@ class Vrag(Pers):
             self.update_storona(dx, physics_engine)
 
             if self.radius_vid.check_collision(self.igrok) and not self.kast_scena:
-
                 if self.igrok.center_x < self.radius_vid.center_x:
                     if abs(self.igrok.right - self.left) <= self.d_zone:
                         self.force_x, self.force_y = 0., 0.
@@ -661,7 +660,6 @@ class VoinInnocentii(Vrag):
             self.walk_animation()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
-        print(self.stamina)
         self.update_harakteristiki()
         self.rivok_sposob.update()
         self.rivok_sposob.on_update()
@@ -685,9 +683,11 @@ class VoinInnocentii(Vrag):
             if self.igrok.center_x > self.radius_vid.center_x:
                 if 150 < abs(self.igrok.left - self.right) <= self.rivok_distanc and not self.stop1:
                     self.rivok_sposob.action = True
+                    self.rivok_sposob.stop1 = False
             elif self.igrok.center_x < self.radius_vid.center_x:
                 if 150 < abs(self.igrok.right - self.left) <= self.rivok_distanc and not self.stop1:
                     self.rivok_sposob.action = True
+                    self.rivok_sposob.stop1 = False
 
     def return_position_func(self):
         return self.rivok_sposob.return_positoin()

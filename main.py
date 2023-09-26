@@ -15,8 +15,8 @@ MASS_IGROK = 1
 FRICTION_IGROK = 0
 IGROK_CT = 'player'
 IG_MAX_VERTICAL_SPEED = 10000
-IG_MAX_HORIZANTAL_SPEED = 350
-IGROK_JUMP_FORCE = 45000
+IG_MAX_HORIZANTAL_SPEED = 400
+IGROK_JUMP_FORCE = 46000
 WALL_FRICTION = 0.8
 WALL_CT = 'wall'
 
@@ -61,6 +61,8 @@ class Igra1GlavaViev(arcade.View):
         self.s = 0
         self.s1 = 0
 
+        self.s_voln = 0
+
         self.t_main_patch = ':resources:images/tiles/'
 
     def setup(self):
@@ -74,19 +76,9 @@ class Igra1GlavaViev(arcade.View):
         self.vrag_list = arcade.SpriteList()
 
         self.walls_list = arcade.SpriteList()
-        for x in range(-10000, 10000, 128):
+        for x in range(-50000, 50000, 128):
             wall = arcade.Sprite(f'{self.t_main_patch}grassMid.png')
             wall.position = x, 64
-            self.walls_list.append(wall)
-
-        for x in range(-10000, 10000, 128):
-            wall = arcade.Sprite(f'{self.t_main_patch}grassMid.png')
-            wall.position = x, -64
-            self.walls_list.append(wall)
-
-        for x in range(-10000, 10000, 128):
-            wall = arcade.Sprite(f'{self.t_main_patch}grassMid.png')
-            wall.position = x, -192
             self.walls_list.append(wall)
 
         self.zhivie_vrag_list = arcade.SpriteList()
@@ -94,38 +86,25 @@ class Igra1GlavaViev(arcade.View):
         self.igrok = pers.Voyslav(self.vrag_list, self.fizika)
         self.igrok.position = IGROK_POSITION
 
-        for x in range(200, 400, 100):
-            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list, 204)
-            vrag._position = x, 400
+        voin_in = pers.VoinInnocentii(self.igrok, self.walls_list, self.v_drug_list, 202)
+        voin_in.position = 450, 200
+        voin_in.hp -= 350
+        self.zhivie_vrag_list.append(voin_in)
+        self.vrag_list.append(voin_in)
+        self.v_drug_list.append(voin_in)
+
+        # brend = pers.Brend(self.igrok, self.walls_list, self.v_drug_list)
+        # brend._position = -3950, 200
+        # self.zhivie_vrag_list.append(brend)
+        # self.vrag_list.append(brend)
+
+        for x in range(-250, 251, 500):
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.v_drug_list, random.randint(204, 205))
+            vrag._position = x, 200
+            vrag.hp -= 350
             self.zhivie_vrag_list.append(vrag)
             self.vrag_list.append(vrag)
-
-        for x in range(-400, -200, 100):
-            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.zhivie_vrag_list, 204)
-            vrag._position = x, 400
-            self.zhivie_vrag_list.append(vrag)
-            self.vrag_list.append(vrag)
-
-        for x in range(700, 1000, 150):
-            voin_in = pers.VoinInnocentii(self.igrok, self.walls_list, self.v_drug_list, 202)
-            voin_in.position = x, 200
-            self.zhivie_vrag_list.append(voin_in)
-            self.vrag_list.append(voin_in)
-
-        vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.v_drug_list, 205)
-        vrag._position = -850, 300
-        self.zhivie_vrag_list.append(vrag)
-        self.vrag_list.append(vrag)
-
-        gromila = pers.Gromila(self.igrok, self.walls_list, self.v_drug_list)
-        gromila.position = -750, 300
-        self.zhivie_vrag_list.append(gromila)
-        self.vrag_list.append(gromila)
-
-        brend = pers.Brend(self.igrok, self.walls_list, self.v_drug_list)
-        brend._position = -3950, 200
-        self.zhivie_vrag_list.append(brend)
-        self.vrag_list.append(brend)
+            self.v_drug_list.append(vrag)
 
         for vrag in self.zhivie_vrag_list:
             vrag.v_drug_list = self.zhivie_vrag_list
@@ -145,6 +124,34 @@ class Igra1GlavaViev(arcade.View):
                                    moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
 
         self.igrok.fizika = self.fizika
+
+    def volna1(self):
+        vrag_list = arcade.SpriteList()
+        voin_in = pers.VoinInnocentii(self.igrok, self.walls_list, self.v_drug_list, 202)
+        voin_in.position = -2300, 250
+        vrag_list.append(voin_in)
+        gromila = pers.Gromila(self.igrok, self.walls_list, self.v_drug_list)
+        gromila.position = 2300, 300
+        vrag_list.append(gromila)
+        for x in range(1750, 2101, 150):
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.v_drug_list, random.randint(204, 205))
+            vrag.position = x, 200
+            vrag_list.append(vrag)
+        for x in range(-2101, -1750, 150):
+            vrag = pers.ZhitelInnocentii(self.igrok, self.walls_list, self.v_drug_list, random.randint(204, 205))
+            vrag.position = x, 200
+            vrag_list.append(vrag)
+
+        for vrag in vrag_list:
+            self.vrag_list.append(vrag)
+            self.zhivie_vrag_list.append(vrag)
+            self.v_drug_list.append(vrag)
+            self.fizika.add_sprite(vrag, 2, 1, max_vertical_velocity=IG_MAX_VERTICAL_SPEED,
+                                   max_horizontal_velocity=200,
+                                   moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF, damping=0.9)
+
+        for vrag in vrag_list:
+            vrag.v_drug_list = self.v_drug_list
 
     def on_draw(self):
         self.clear()
@@ -172,7 +179,9 @@ class Igra1GlavaViev(arcade.View):
                 else:
                     self.smert_list2.append(vrag)
                 self.zhivie_vrag_list.remove(vrag)
+                self.v_drug_list.remove(vrag)
                 self.fizika.remove_sprite(vrag)
+                vrag.smert_func()
 
             else:
                 vrag.on_update()
@@ -186,10 +195,12 @@ class Igra1GlavaViev(arcade.View):
                     y = 0
 
                 if abs(x) > 0:
+                    vrag.oglush_func((x, y))
                     self.fizika.apply_force(vrag, (x, y))
                     self.fizika.set_friction(vrag, 0.1)
                     vrag.stamina -= 0.2 / 60
                 elif y > 0:
+                    vrag.oglush_func((x, y))
                     self.fizika.apply_force(vrag, (x, y))
                     vrag.stamina -= 2 / 60
                 else:
@@ -218,6 +229,10 @@ class Igra1GlavaViev(arcade.View):
             self.s1 += 1
             poz = self.igrok.molniya.return_position()
             self.fizika.set_position(self.igrok, poz)
+
+        if len(self.zhivie_vrag_list) <= 0 and self.s_voln == 0:
+            self.s_voln += 1
+            self.volna1()
 
         self.fizika.step()
 
@@ -283,9 +298,11 @@ class Igra1GlavaViev(arcade.View):
             return ekran_center_y
 
 
-win = arcade.Window(W, H)
+window = arcade.Window(W, H)
 viev1 = Igra1GlavaViev()
 viev1.setup()
-win.show_view(viev1)
+window.show_view(viev1)
+
+window.show_view(viev1)
 
 arcade.run()

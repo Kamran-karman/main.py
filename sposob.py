@@ -279,6 +279,12 @@ class ColdOruzhie(Fight):
         self.texture = self.udar_texture[self.pers.storona]
         self.hit_box._points = self.texture.hit_box_points
 
+    def stamina(self, minus_stamina):
+        if self.pers.stamina >= minus_stamina:
+            return True
+        else:
+            return False
+
 
 class FizSposobFight(Fight):
     def __init__(self, pers, sprite_list, uron, timer_for_s, timer_for_s_kd):
@@ -405,6 +411,12 @@ class Zashchita(Fight):
                     self.rf = False
                     self.sposob_list.remove(sposob1)
 
+    def stamina(self, minus_stamina):
+        if self.pers.stamina >= minus_stamina:
+            return True
+        else:
+            return False
+
 
 class Molniya(Stihiya):
     def __init__(self, pers, sprite_list):
@@ -438,8 +450,20 @@ class Rivok(Mobilnost):
         if self.s_kd < S_KD_RIVOK:
             self.action = False
 
-        if not self.stamina(self.minus_stamina):
+        if self.action:
+            self.s += 1
+            if self.s == 1:
+                if not self.stamina(self.minus_stamina):
+                    self.action = False
+                    self.stop1 = True
+                else:
+                    self.pers.stamina -= self.minus_stamina
+        if self.s > self.timer_for_s:
+            self.s_kd = 0
+            self.change_x = 0
             self.action = False
+            self.stop1 = True
+            self.s = 0
 
         self.radius_stop.position = self.position
         if not self.action:
@@ -471,24 +495,15 @@ class Rivok(Mobilnost):
         else:
             self.pers.kast_scena = False
 
-        if self.pers.storona == 0 and self.action and self.s > self.timer_for_rivok:
+        if self.pers.storona == 0 and self.action and self.timer_for_s >= self.s > self.timer_for_rivok:
             self.change_x = 40
             self.stop1 = False
-        elif self.pers.storona == 1 and self.action and self.s > self.timer_for_rivok:
+        elif self.pers.storona == 1 and self.action and self.timer_for_s >= self.s > self.timer_for_rivok:
             self.change_x = -40
             self.stop1 = False
 
-        if self.action:
-            self.s += 1
-            if self.s == 1:
-                self.pers.stamina -= self.minus_stamina
-        if self.s > self.timer_for_s:
-            self.s_kd = 0
-            self.change_x = 0
-            self.stop1 = True
-            self.action = False
-            self.s = 0
-            self.pers.stamina -= 20
+        if self.stop1:
+            print(1)
 
         self.pers.rivok = self.action
 
@@ -507,6 +522,7 @@ class Udar(FizSposobFight):
         self.s_kd = self.timer_for_s_kd + 5
 
         self.probit_block = False
+        self.minus_stamina = 1
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
         if self.pers.sil:

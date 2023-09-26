@@ -2,6 +2,7 @@ import arcade
 import hit_box_and_radius
 import sposob
 import arcade.gui
+import random
 
 
 KOOR_X = 100
@@ -9,7 +10,7 @@ KOOR_Y = 500
 D_ZONE = 0.005
 
 # ___Voyslav___
-HP_VOYSLAV = 150099999999999
+HP_VOYSLAV = 1750
 MANA_VOYSLAV = 300
 STAMINA_VOYSLAV = 200
 
@@ -73,6 +74,10 @@ class Pers(arcade.Sprite):
         self.slabweak = False
         self.s_slabweak = 0
         self.timer_for_s_slabweak = 900
+        
+        self.oglush = False
+        self.s_oglush = 0
+        self.timer_for_s_oglush = 0
 
         self.reakciya = 0
         self.block = sposob.Block(self, self.sprite_list)
@@ -108,7 +113,7 @@ class Pers(arcade.Sprite):
         self.return_position = True
         self.tipo_return = False
 
-    def update_harakteristiki(self):
+    def update_harakteristiki(self, vivod=False):
         if self.hp > self.max_hp:
             self.hp = self.max_hp
         if self.hp >= self.hp_print:
@@ -137,7 +142,8 @@ class Pers(arcade.Sprite):
             self.mana = self.max_mana
         if self.mana < self.mana_print:
             self.mana_print = self.mana
-            #print(f'{self.pers} mana:', round(self.mana))
+            if vivod:
+                print(f'{self.pers} mana:', round(self.mana), self.mor)
         elif self.mana > self.mana_print:
             self.mana_print = self.mana
         if self.mana < 0:
@@ -158,13 +164,14 @@ class Pers(arcade.Sprite):
             self.stamina = self.max_stamina
         if self.stamina < self.stamina_print:
             self.stamina_print = self.stamina
-            #print(f'{self.pers} stamina:', round(self.stamina))
+            if vivod:
+                print(f'{self.pers} stamina:', round(self.stamina), self.slabweak)
         elif self.stamina > self.stamina_print:
             self.stamina_print = self.stamina
         if self.stamina < 0:
             self.slabweak = True
-            self.mana -= 1
-            self.stamina += 0.5
+            self.mana -= 1 / 60
+            self.stamina += 0.5 / 60
             self.s_slabweak = 0
 
     def harakteristiki(self):
@@ -247,6 +254,29 @@ class Pers(arcade.Sprite):
         self.kvadrat_radius.scale = self.scale
         self.kvadrat_radius.position = self.position
 
+    def slabweak_func(self, force):
+        if self.slabweak:
+            return force * 0
+        else:
+            return force
+
+    def smert_func(self):
+        self.center_y = 128
+        if random.randint(0, 1) == 0:
+            self.angle = 90 * -1
+        else:
+            self.angle = 90 * 1
+            
+    def oglush_func(self, force):
+        if self.oglush:
+            self.s_oglush += 1
+            if self.s_oglush >= self.timer_for_s_oglush:
+                self.oglush = force
+                return force
+            return 0, 0
+        return force
+        
+
 
 class Voyslav(Pers):
     def __init__(self, sprite_list, fizika):
@@ -286,8 +316,6 @@ class Voyslav(Pers):
 
     def pymunk_moved(self, physics_engine, dx, dy, d_angle):
         self.tipo_return = False
-        if self.mana > self.mana_print or self.mana < self.mana_print:
-            print(self.mana)
         self.update_storona(dx, physics_engine)
 
         self.block_func()
@@ -306,7 +334,7 @@ class Voyslav(Pers):
             return
 
     def on_update(self, delta_time: float = 1 / 60):
-        self.update_harakteristiki()
+        self.update_harakteristiki(True)
         self.update_kvadrat_radius()
 
         self.shchit.fizika = self.fizika
@@ -457,6 +485,7 @@ class Vrag(Pers):
                     if abs(self.igrok.right - self.left) <= self.d_zone:
                         self.force_x, self.force_y = 0., 0.
                         self.go = False
+                        self.storona = 1
                     else:
                         self.force_x = -15000
                         self.go = True
@@ -475,6 +504,7 @@ class Vrag(Pers):
                     if abs(self.right - self.igrok.left) <= self.d_zone:
                         self.force_x, self.force_y = 0., 0.
                         self.go = False
+                        self.storona = 0
                     else:
                         self.force_x = 15000
                         self.go = True
@@ -665,7 +695,7 @@ class VoinInnocentii(Vrag):
         self.rivok_sposob.on_update()
         self.update_udar()
 
-        if self.rivok_sposob.stop1:
+        if self.rivok_sposob.stop1 or self.rivok_sposob.s >= self.rivok_sposob.timer_for_s:
             self.rivok_sposob.stop1 = False
             self.return_position = True
         else:
@@ -683,11 +713,9 @@ class VoinInnocentii(Vrag):
             if self.igrok.center_x > self.radius_vid.center_x:
                 if 150 < abs(self.igrok.left - self.right) <= self.rivok_distanc and not self.stop1:
                     self.rivok_sposob.action = True
-                    self.rivok_sposob.stop1 = False
             elif self.igrok.center_x < self.radius_vid.center_x:
                 if 150 < abs(self.igrok.right - self.left) <= self.rivok_distanc and not self.stop1:
                     self.rivok_sposob.action = True
-                    self.rivok_sposob.stop1 = False
 
     def return_position_func(self):
         return self.rivok_sposob.return_positoin()

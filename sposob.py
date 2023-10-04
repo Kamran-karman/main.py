@@ -887,7 +887,7 @@ class SharMolniay(Molniya):
         self.uron1 = URON1_SHAR_MOL
         self.minus_mana = 1
 
-        self.tex_shar = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/radius_porazheniya.png')
+        self.tex_shar = arcade.load_texture_pair('nuzhno/radius_porazheniya.png')
         self.texture = self.tex_shar[1]
         self.scale = 0.01
 
@@ -1340,7 +1340,7 @@ class Mech(ColdOruzhie):
         self.tip = MECH
         self.uron = 50
 
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/udar.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar.png')
         self.texture = self.udar_texture[0]
         self.scale = 1.5
 
@@ -1378,7 +1378,7 @@ class DvuruchMech(ColdOruzhie):
 
         self.uron = URON_DVURUCH_MECH
 
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/udar.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar.png')
         self.texture = self.udar_texture[0]
         self.scale = 1.5
 
@@ -1437,8 +1437,8 @@ class Shchit(Zashchita):
         self.uron = URON_SHCHIT
 
         self.scale = 0.5
-        self.block_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/shcit.png')
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/shcit_udar.png')
+        self.block_texture = arcade.load_texture_pair('nuzhno/shcit.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/shcit_udar.png')
         self.texture = self.block_texture[1]
 
         self.minus_stamina = 1
@@ -1494,7 +1494,7 @@ class Vila(ColdOruzhie):
 
         self.s_kd = self.timer_for_s_kd + 5
 
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/vila.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/vila.png')
         self.texture = self.udar_texture[0]
 
         self.minus_stamina = 1
@@ -1544,7 +1544,7 @@ class Topor(ColdOruzhie):
 
         self.s_kd = self.timer_for_s_kd + 5
 
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/topor0.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/topor0.png')
         self.texture = self.udar_texture[0]
         self.angle = 10
 
@@ -1585,7 +1585,7 @@ class MechBrenda(ColdOruzhie):
         self.tip = MECH_BRENDA
         self.uron = URON_MECH_BRENDA
 
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/mech_Brenda0.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/mech_Brenda0.png')
         self.texture = self.udar_texture[0]
 
         self.s_kd = self.timer_for_s_kd + 5

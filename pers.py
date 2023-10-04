@@ -309,11 +309,11 @@ class Voyslav(Pers):
 
         self.scale = 1
 
-        main_patch = "C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/animated_characters/male_adventurer/maleAdventurer"
+        main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
         self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
         self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
         self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.udar_texture = arcade.load_texture_pair(f'C:/Users/user/Desktop/Igra/nuzhno/udar2.png')
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/udar2.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
@@ -618,12 +618,12 @@ class BetaBalvanchik(Vrag):
 
         self.scale = 1.2
 
-        main_patch = "C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/animated_characters/male_adventurer/maleAdventurer"
+        main_patch = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
         self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
         self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
         self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.smert_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/smert.png')
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/udar2.png')
+        self.smert_texture = arcade.load_texture_pair('nuzhno/smert.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar2.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
@@ -678,11 +678,11 @@ class VoinInnocentii(Vrag):
 
         self.scale = 1.1
 
-        main_patch = 'C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/animated_characters/male_person/malePerson'
+        main_patch = ':resources:images/animated_characters/male_person/malePerson'
         self.idle_texture = arcade.load_texture_pair(f'{main_patch}_idle.png')
         self.jump_texture = arcade.load_texture_pair(f'{main_patch}_jump.png')
         self.fall_texture = arcade.load_texture_pair(f'{main_patch}_fall.png')
-        self.udar_texture = arcade.load_texture_pair('C:/Users/user/Desktop/Igra/nuzhno/udar2.png')
+        self.udar_texture = arcade.load_texture_pair('nuzhno/udar2.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
@@ -773,11 +773,11 @@ class Gromila(Vrag):
 
         self.scale = 2
 
-        main_patch = 'C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/animated_characters/male_person/malePerson'
+        main_patch = ':resources:images/animated_characters/male_person/malePerson'
         self.idle_texture = arcade.load_texture_pair(f'{main_patch}_idle.png')
         self.jump_texture = arcade.load_texture_pair(f'{main_patch}_jump.png')
         self.fall_texture = arcade.load_texture_pair(f'{main_patch}_fall.png')
-        self.udar_texture = arcade.load_texture_pair(f'C:/Users/user/Desktop/Igra/nuzhno/gronila_udar.png')
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/gronila_udar.png')
 
         for i in range(8):
             tex = arcade.load_texture_pair(f"{main_patch}_walk{i}.png")
@@ -828,7 +828,7 @@ class ZhitelInnocentii(Vrag):
 
         self.scale = 0.9
 
-        main_patch = 'C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/animated_characters/female_person/femalePerson_'
+        main_patch = ':resources:images/animated_characters/female_person/femalePerson_'
         self.idle_texture = arcade.load_texture_pair(f'{main_patch}idle.png')
         self.jump_texture = arcade.load_texture_pair(f'{main_patch}jump.png')
         self.fall_texture = arcade.load_texture_pair(f'{main_patch}fall.png')
@@ -885,11 +885,11 @@ class Brend(Vrag):
         self.reakciya = REAKCIYA_BREND
         self.harakteristiki()
 
-        main_patch = 'C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/animated_characters/male_adventurer/maleAdventurer'
+        main_patch = ':resources:images/animated_characters/male_adventurer/maleAdventurer'
         self.idle_texture = arcade.load_texture_pair(f"{main_patch}_idle.png")
         self.jump_texture = arcade.load_texture_pair(f"{main_patch}_jump.png")
         self.fall_texture = arcade.load_texture_pair(f"{main_patch}_fall.png")
-        self.udar_texture = arcade.load_texture_pair(f'C:/Users/user/Desktop/Igra/nuzhno/udar2.png')
+        self.udar_texture = arcade.load_texture_pair(f'nuzhno/udar2.png')
         self.scale = 1.05
 
         for i in range(8):

@@ -78,7 +78,7 @@ class Igra1GlavaViev(arcade.View):
 
         self.walls_list = arcade.SpriteList()
         for x in range(-50000, 50000, 128):
-            wall = arcade.Sprite('C:/Users/user/Desktop/Igra/venv/Lib/site-packages/arcade/resources/images/tiles/grassMid.png')
+            wall = arcade.Sprite(':resources:images/tiles/grassMid.png')
             wall.position = x, 64
             self.walls_list.append(wall)
 
@@ -111,7 +111,7 @@ class Igra1GlavaViev(arcade.View):
         self.box_fight = arcade.SpriteList()
         for x in range(-2032, 2033, 64):
             for i in range(-1, 2, 2):
-                box = arcade.Sprite('C:/Users/user/Desktop/Igra/nuzhno/box_fight.png')
+                box = arcade.Sprite('nuzhno/box_fight.png')
                 box.scale = 0.5
                 box.position = x, 2032 * i
                 self.box_fight.append(box)

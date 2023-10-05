@@ -1,3 +1,9 @@
+import os
+import sys
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)
+
 import random
 import arcade
 import arcade.gui
@@ -429,4 +435,3 @@ window.show_view(viev1)
 window.show_view(viev1)
 
 arcade.run()
-

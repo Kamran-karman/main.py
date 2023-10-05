@@ -484,7 +484,7 @@ class Rivok(Mobilnost):
         self.tip = RIVOK
 
         self.rivok_tex = (
-            arcade.load_texture_pair(':resources:images/animated_characters/male_person/malePerson_walk7.png'))
+            arcade.load_texture_pair('nuzhno/male_person/malePerson_walk7.png'))
 
         self.texture = self.rivok_tex[1]
 
@@ -1618,3 +1618,4 @@ class MechBrenda(ColdOruzhie):
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.update_storona()
+
